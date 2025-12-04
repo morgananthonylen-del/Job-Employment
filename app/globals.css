@@ -1,0 +1,504 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 0 0% 100%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 0 0% 100%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 91% 60%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 217 91% 60%;
+  }
+  
+  /* Light mode overrides - grey background */
+  :root:not(.dark) {
+    --background: 243 244 246; /* grey-100 */
+  }
+  
+  /* Force button colors - NO YELLOW */
+  button.bg-primary,
+  .bg-primary {
+    background-color: hsl(217, 91%, 60%) !important;
+    color: white !important;
+  }
+  
+  button.bg-primary:hover,
+  .bg-primary:hover {
+    background-color: hsl(217, 91%, 55%) !important;
+  }
+  
+  /* Dark mode buttons */
+  .dark button.bg-primary,
+  .dark .bg-primary {
+    background-color: hsl(217, 91%, 60%) !important;
+    color: white !important;
+  }
+}
+
+/* FORCE REMOVE YELLOW FROM TOASTS - Optimized selectors */
+[data-radix-toast-root][data-state="open"] {
+  background-color: white !important;
+}
+
+.dark [data-radix-toast-root][data-state="open"] {
+  background-color: hsl(var(--background)) !important;
+}
+
+/* Force ALL buttons to be blue - NO YELLOW - Optimized */
+button.bg-primary,
+.bg-primary {
+  background-color: hsl(217, 91%, 60%) !important;
+  color: white !important;
+}
+
+button.bg-primary:hover,
+.bg-primary:hover {
+  background-color: hsl(217, 91%, 55%) !important;
+}
+
+/* Force outline buttons to be white - NO YELLOW */
+[data-variant="outline"],
+[data-variant="outline"]:hover {
+  background-color: white !important;
+  background: white !important;
+  color: #1f2937 !important; /* text-gray-800 */
+}
+
+/* Force Switch toggle to be gray when unchecked - NO YELLOW */
+button[role="switch"][data-state="unchecked"],
+[role="switch"][data-state="unchecked"] {
+  background-color: #D1D5DB !important;
+  background: #D1D5DB !important;
+}
+
+button[role="switch"][data-state="checked"],
+[role="switch"][data-state="checked"] {
+  background-color: hsl(217, 91%, 60%) !important;
+  background: hsl(217, 91%, 60%) !important;
+}
+
+/* Ensure autofill backgrounds stay white across browsers */
+input,
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+input[type="email"],
+input[type="email"]:-webkit-autofill,
+input[type="password"],
+input[type="password"]:-webkit-autofill,
+input[type="text"],
+input[type="text"]:-webkit-autofill,
+input[type="tel"],
+input[type="tel"]:-webkit-autofill,
+input[type="number"],
+input[type="number"]:-webkit-autofill,
+input[type="date"],
+input[type="date"]:-webkit-autofill,
+textarea,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active,
+select,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active,
+button[data-radix-select-trigger],
+[data-radix-select-trigger] {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  -webkit-text-fill-color: #000000 !important;
+  color: #000000 !important;
+  caret-color: #000000 !important;
+}
+
+/* Dark mode autofill */
+.dark input,
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active,
+.dark input[type="email"],
+.dark input[type="email"]:-webkit-autofill,
+.dark input[type="password"],
+.dark input[type="password"]:-webkit-autofill,
+.dark input[type="text"],
+.dark input[type="text"]:-webkit-autofill,
+.dark input[type="tel"],
+.dark input[type="tel"]:-webkit-autofill,
+.dark input[type="number"],
+.dark input[type="number"]:-webkit-autofill,
+.dark input[type="date"],
+.dark input[type="date"]:-webkit-autofill,
+.dark textarea,
+.dark textarea:-webkit-autofill,
+.dark textarea:-webkit-autofill:hover,
+.dark textarea:-webkit-autofill:focus,
+.dark textarea:-webkit-autofill:active,
+.dark select,
+.dark select:-webkit-autofill,
+.dark select:-webkit-autofill:hover,
+.dark select:-webkit-autofill:focus,
+.dark select:-webkit-autofill:active {
+  background-color: hsl(var(--background)) !important;
+  background: hsl(var(--background)) !important;
+  -webkit-box-shadow: 0 0 0 1000px hsl(var(--background)) inset !important;
+  box-shadow: 0 0 0 1000px hsl(var(--background)) inset !important;
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  color: hsl(var(--foreground)) !important;
+  caret-color: hsl(var(--foreground)) !important;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-source-sans), system-ui, sans-serif;
+    font-size: 1.0625rem; /* ~17px for improved readability */
+    line-height: 1.65;
+  }
+
+  /* Make images unselectable */
+  img,
+  [role="img"],
+  picture {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+.mobile-cta-gap {
+  margin-top: 20px !important;
+  margin-bottom: 20px !important;
+}
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .font-heading {
+    font-family: var(--font-inter), var(--font-source-sans), system-ui, sans-serif;
+  }
+}
+
+@keyframes waterFill {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(-5%);
+  }
+}
+
+.animate-water-fill {
+  animation: waterFill 1.6s ease-in-out infinite alternate;
+}
+
+.animate-water-fill-delayed {
+  animation: waterFill 1.6s ease-in-out infinite alternate;
+  animation-delay: -0.8s;
+}
+
+.animate-ad-preview {
+  animation: adPreviewIn 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes adPreviewIn {
+  0% {
+    transform: translateY(35px) scale(0.94);
+    opacity: 0;
+  }
+  65% {
+    transform: translateY(-4px) scale(1.01);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-call-pop {
+  animation: callPopupIn 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes callPopupIn {
+  0% {
+    transform: translateY(40px) scale(0.95);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-6px) scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-callout-pop {
+  animation: calloutPop 220ms cubic-bezier(0.2, 0.9, 0.22, 1);
+}
+
+@keyframes calloutPop {
+  0% {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* FORCE REMOVE #FFFF00 YELLOW FROM ALL POPUPS, DIALOGS, TOASTS, MODALS - NO YELLOW EVER */
+[data-radix-toast-root],
+[data-radix-toast-root] *,
+[data-radix-dialog-content],
+[data-radix-dialog-content] *,
+[data-radix-popover-content],
+[data-radix-popover-content] *,
+[role="dialog"],
+[role="dialog"] *,
+[role="alertdialog"],
+[role="alertdialog"] *,
+.modal,
+.modal *,
+.popup,
+.popup *,
+.dialog,
+.dialog *,
+.toast,
+.toast * {
+  background-color: white !important;
+  background: white !important;
+  color: #1f2937 !important;
+}
+
+/* Specifically target DialogContent to ensure white background - NO YELLOW */
+[data-radix-dialog-content],
+[data-radix-dialog-content] > *,
+[data-radix-dialog-content] form,
+[data-radix-dialog-content] form > * {
+  background-color: white !important;
+  background: white !important;
+}
+
+/* Force white on all inputs inside dialog - prevent autofill yellow */
+[data-radix-dialog-content] input,
+[data-radix-dialog-content] input[type="text"],
+[data-radix-dialog-content] input[type="email"],
+[data-radix-dialog-content] input[type="tel"],
+[data-radix-dialog-content] input[type="number"],
+[data-radix-dialog-content] textarea,
+[data-radix-dialog-content] select {
+  background-color: white !important;
+  background: white !important;
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  box-shadow: 0 0 0 1000px white inset !important;
+}
+
+.dark [data-radix-toast-root],
+.dark [data-radix-toast-root] *,
+.dark [data-radix-dialog-content],
+.dark [data-radix-dialog-content] *,
+.dark [data-radix-popover-content],
+.dark [data-radix-popover-content] *,
+.dark [role="dialog"],
+.dark [role="dialog"] *,
+.dark [role="alertdialog"],
+.dark [role="alertdialog"] *,
+.dark .modal,
+.dark .modal *,
+.dark .popup,
+.dark .popup *,
+.dark .dialog,
+.dark .dialog *,
+.dark .toast,
+.dark .toast * {
+  background-color: hsl(var(--background)) !important;
+  background: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Force remove yellow from any input/select/textarea inside popups */
+[data-radix-toast-root] input,
+[data-radix-toast-root] input:-webkit-autofill,
+[data-radix-toast-root] select,
+[data-radix-toast-root] select:-webkit-autofill,
+[data-radix-toast-root] textarea,
+[data-radix-toast-root] textarea:-webkit-autofill,
+[data-radix-dialog-content] input,
+[data-radix-dialog-content] input:-webkit-autofill,
+[data-radix-dialog-content] select,
+[data-radix-dialog-content] select:-webkit-autofill,
+[data-radix-dialog-content] textarea,
+[data-radix-dialog-content] textarea:-webkit-autofill,
+[data-radix-popover-content] input,
+[data-radix-popover-content] input:-webkit-autofill,
+[data-radix-popover-content] select,
+[data-radix-popover-content] select:-webkit-autofill,
+[data-radix-popover-content] textarea,
+[data-radix-popover-content] textarea:-webkit-autofill,
+[role="dialog"] input,
+[role="dialog"] input:-webkit-autofill,
+[role="dialog"] select,
+[role="dialog"] select:-webkit-autofill,
+[role="dialog"] textarea,
+[role="dialog"] textarea:-webkit-autofill,
+[role="alertdialog"] input,
+[role="alertdialog"] input:-webkit-autofill,
+[role="alertdialog"] select,
+[role="alertdialog"] select:-webkit-autofill,
+[role="alertdialog"] textarea,
+[role="alertdialog"] textarea:-webkit-autofill {
+  background-color: white !important;
+  background: white !important;
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-text-fill-color: #000000 !important;
+  color: #000000 !important;
+  caret-color: #000000 !important;
+}
+
+.dark [data-radix-toast-root] input,
+.dark [data-radix-toast-root] input:-webkit-autofill,
+.dark [data-radix-toast-root] select,
+.dark [data-radix-toast-root] select:-webkit-autofill,
+.dark [data-radix-toast-root] textarea,
+.dark [data-radix-toast-root] textarea:-webkit-autofill,
+.dark [data-radix-dialog-content] input,
+.dark [data-radix-dialog-content] input:-webkit-autofill,
+.dark [data-radix-dialog-content] select,
+.dark [data-radix-dialog-content] select:-webkit-autofill,
+.dark [data-radix-dialog-content] textarea,
+.dark [data-radix-dialog-content] textarea:-webkit-autofill,
+.dark [data-radix-popover-content] input,
+.dark [data-radix-popover-content] input:-webkit-autofill,
+.dark [data-radix-popover-content] select,
+.dark [data-radix-popover-content] select:-webkit-autofill,
+.dark [data-radix-popover-content] textarea,
+.dark [data-radix-popover-content] textarea:-webkit-autofill,
+.dark [role="dialog"] input,
+.dark [role="dialog"] input:-webkit-autofill,
+.dark [role="dialog"] select,
+.dark [role="dialog"] select:-webkit-autofill,
+.dark [role="dialog"] textarea,
+.dark [role="dialog"] textarea:-webkit-autofill,
+.dark [role="alertdialog"] input,
+.dark [role="alertdialog"] input:-webkit-autofill,
+.dark [role="alertdialog"] select,
+.dark [role="alertdialog"] select:-webkit-autofill,
+.dark [role="alertdialog"] textarea,
+.dark [role="alertdialog"] textarea:-webkit-autofill {
+  background-color: hsl(var(--background)) !important;
+  background: hsl(var(--background)) !important;
+  -webkit-box-shadow: 0 0 0 1000px hsl(var(--background)) inset !important;
+  box-shadow: 0 0 0 1000px hsl(var(--background)) inset !important;
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  color: hsl(var(--foreground)) !important;
+  caret-color: hsl(var(--foreground)) !important;
+}
+
+/* Force remove any yellow border or outline from popups */
+[data-radix-toast-root],
+[data-radix-dialog-content],
+[data-radix-popover-content],
+[role="dialog"],
+[role="alertdialog"] {
+  border-color: #e5e7eb !important;
+  outline-color: #e5e7eb !important;
+}
+
+/* Remove yellow from any button inside popups */
+[data-radix-toast-root] button,
+[data-radix-dialog-content] button,
+[data-radix-popover-content] button,
+[role="dialog"] button,
+[role="alertdialog"] button {
+  background-color: hsl(217, 91%, 60%) !important;
+  background: hsl(217, 91%, 60%) !important;
+  color: white !important;
+}
+
+[data-radix-toast-root] button:hover,
+[data-radix-dialog-content] button:hover,
+[data-radix-popover-content] button:hover,
+[role="dialog"] button:hover,
+[role="alertdialog"] button:hover {
+  background-color: hsl(217, 91%, 55%) !important;
+  background: hsl(217, 91%, 55%) !important;
+}
+
+/* Override for outline variant buttons in dialogs - grey border and text */
+[data-radix-dialog-content] button[data-variant="outline"],
+[data-radix-dialog-content] button[class*="border-gray"],
+[role="dialog"] button[data-variant="outline"],
+[role="dialog"] button[class*="border-gray"] {
+  background-color: transparent !important;
+  background: transparent !important;
+  border-color: #d1d5db !important;
+  color: #374151 !important;
+}
+
+[data-radix-dialog-content] button[data-variant="outline"]:hover,
+[data-radix-dialog-content] button[class*="border-gray"]:hover,
+[role="dialog"] button[data-variant="outline"]:hover,
+[role="dialog"] button[class*="border-gray"]:hover {
+  background-color: #f9fafb !important;
+  background: #f9fafb !important;
+  color: #111827 !important;
+}
+
