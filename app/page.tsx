@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Briefcase, FileText, Users, MessageSquare, Bell, Shield, TrendingUp } from "lucide-react";
+import { Search, Briefcase, FileText, Users, MessageSquare, Bell, Shield, TrendingUp, Sparkles, Bot, Bookmark } from "lucide-react";
 import Image from "next/image";
 import { Open_Sans } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -134,40 +134,41 @@ export default function HomePage() {
   return (
     <div className={`min-h-screen bg-purple-600 flex flex-col ${openSans.className}`}>
       {/* Top Navigation */}
-      <div className="w-full px-4 lg:px-8 pt-4">
-        <div className="flex justify-end">
-          <div className="flex items-center gap-2 text-white">
-            <Link href="/login/jobseeker" className="pb-0.5 border-b-2 border-transparent hover:border-white transition-all">
-              Job Seeker
+      <div className="sticky top-0 z-50 w-full bg-white shadow-md">
+        <div className="w-full max-w-7xl mx-auto px-4 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/" className={cn("flex items-center gap-3", openSans.className)} style={{ fontSize: "28px", lineHeight: "32px", fontWeight: 600, fontStyle: "normal" }}>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-500 text-2xl font-semibold drop-shadow-[0_4px_8px_rgba(251,191,36,0.35)]">
+                ⚡
+              </span>
+              <span className="text-gray-900">FastLink</span>
             </Link>
-            <span>|</span>
-            <Link href="/login/business" className="pb-0.5 border-b-2 border-transparent hover:border-white transition-all">
-              Company
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/login/jobseeker" className="px-4 py-2 text-gray-700 hover:text-purple-600 border-b-2 border-transparent hover:border-purple-600 transition-all font-medium">
+                Job Seeker
+              </Link>
+              <span className="text-gray-300">|</span>
+              <Link href="/login/business" className="px-4 py-2 text-gray-700 hover:text-purple-600 border-b-2 border-transparent hover:border-purple-600 transition-all font-medium">
+                Company
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex w-full max-w-5xl mx-auto flex-col flex-1 px-4 lg:px-8 pt-4 lg:pt-8">
+      <div className="flex w-full max-w-7xl mx-auto flex-col flex-1 px-4 lg:px-8 pt-8 lg:pt-12">
         <div className={cn(
           "flex flex-col items-center justify-center gap-2 mb-8 transition-all duration-500 ease-out",
           showHero ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-8"
         )}>
-          <Link href="/" className={cn("flex items-center gap-4 text-white", openSans.className)} style={{ fontSize: "48px", lineHeight: "56px", fontWeight: 600, fontStyle: "normal" }}>
-            <span>Introducing</span>
-            <span className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-500 text-4xl font-semibold drop-shadow-[0_6px_12px_rgba(251,191,36,0.35)]">
-              ⚡
-            </span>
-            <span>FastLink 1.0</span>
-          </Link>
-          <p className="text-white text-2xl">Connecting Fiji companies with talented job seekers</p>
+          <p className="text-white text-2xl lg:text-3xl text-center">Connecting Fiji companies with talented job seekers</p>
         </div>
       </div>
 
       {/* Slideshow */}
       <div className="relative w-full flex-1 flex items-end">
         <div className={cn(
-          "relative w-full max-w-5xl mx-auto h-[70vh] overflow-hidden px-4 lg:px-8 pb-0 transition-opacity duration-500 ease-in-out",
+          "relative w-full max-w-7xl mx-auto h-[70vh] overflow-hidden px-4 lg:px-8 pb-0 transition-opacity duration-500 ease-in-out",
           showImage ? "opacity-100" : "opacity-0"
         )}>
           {slides.map((slide, index) => (
@@ -215,7 +216,7 @@ export default function HomePage() {
 
       {/* Features Section */}
       <div className="bg-white pt-40 pb-40 px-4 lg:px-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Action Buttons */}
           <div className="flex justify-center gap-0 -mt-40 mb-8">
             <button
@@ -246,86 +247,191 @@ export default function HomePage() {
             {/* Job Seeker Features */}
             {activeTab === "jobseeker" && (
               <div className="w-full">
-                <h3 className="text-3xl font-bold text-gray-900 mb-8 text-center">For Job Seekers</h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="border border-gray-200 shadow-sm bg-gray-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 flex items-center justify-center">
-                          <Search className="h-10 w-10 text-blue-600" />
+                <h3 className="text-3xl font-bold text-gray-900 mb-8 text-center">Why Choose Fastlink</h3>
+                <div className="flex flex-col lg:flex-row gap-8 items-start">
+                  {/* Left Column - Main Features */}
+                  <div className="flex-1 lg:flex-[2] space-y-6 w-full">
+                    <Card className="border border-gray-200 shadow-sm bg-gradient-to-br from-blue-50 to-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 flex items-center justify-center">
+                            <Search className="h-10 w-10 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">Find Your Dream Job</h4>
+                            <p className="text-base text-gray-600 mb-3">Browse thousands of job opportunities across Fiji. From Suva to Nadi, Lautoka to Labasa - discover positions that match your skills, experience, and career goals.</p>
+                            <p className="text-sm text-gray-500 italic">Example: "Sarah from Nadi found her marketing role in just 3 days using our smart job matching!"</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">Browse Jobs</h4>
-                          <p className="text-base text-gray-600">Find opportunities that match your skills and interests</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border border-gray-200 shadow-sm bg-gradient-to-br from-green-50 to-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 flex items-center justify-center">
+                            <FileText className="h-10 w-10 text-green-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">Streamlined Application Process</h4>
+                            <p className="text-base text-gray-600 mb-3">Apply to multiple jobs in minutes, not hours. Our one-click application system saves your documents and personalizes each application automatically.</p>
+                            <p className="text-sm text-gray-500 italic">Example: "James applied to 10 jobs in 15 minutes - something that used to take him 3 hours!"</p>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border border-gray-200 shadow-sm bg-gray-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 flex items-center justify-center">
-                          <FileText className="h-10 w-10 text-blue-600" />
+                      </CardContent>
+                    </Card>
+                    <Card className="border border-gray-200 shadow-sm bg-gradient-to-br from-purple-50 to-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 flex items-center justify-center">
+                            <Bell className="h-10 w-10 text-purple-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">Real-Time Application Tracking</h4>
+                            <p className="text-base text-gray-600 mb-3">Never wonder about your application status again. Get instant notifications when employers view your profile, shortlist you, or schedule interviews.</p>
+                            <p className="text-sm text-gray-500 italic">Example: "Priya got notified the moment her application was reviewed - she prepared and got the job!"</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">Easy Applications</h4>
-                          <p className="text-base text-gray-600">Apply quickly with AI-powered assistance and document management</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border border-gray-200 shadow-sm bg-gradient-to-br from-amber-50 to-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 flex items-center justify-center">
+                            <MessageSquare className="h-10 w-10 text-amber-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">Direct Employer Communication</h4>
+                            <p className="text-base text-gray-600 mb-3">Ask questions, clarify job details, and build relationships with employers before you even apply. Stand out from other candidates.</p>
+                            <p className="text-sm text-gray-500 italic">Example: "Daniel asked about work hours and got a response in 2 hours - he knew it was the right fit!"</p>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border border-gray-200 shadow-sm bg-gray-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 flex items-center justify-center">
-                          <Bell className="h-10 w-10 text-blue-600" />
+                      </CardContent>
+                    </Card>
+                    <Card className="border border-gray-200 shadow-sm bg-gradient-to-br from-indigo-50 to-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 flex items-center justify-center">
+                            <Bookmark className="h-10 w-10 text-indigo-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">Save & Organize Jobs</h4>
+                            <p className="text-base text-gray-600 mb-3">Bookmark your favorite positions and organize them by priority. Never lose track of opportunities that interest you.</p>
+                            <p className="text-sm text-gray-500 italic">Example: "Elena saved 20 jobs and organized them by location - made her job search so much easier!"</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">Track Applications</h4>
-                          <p className="text-base text-gray-600">Monitor your application status and get real-time updates</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border border-gray-200 shadow-sm bg-gradient-to-br from-teal-50 to-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 flex items-center justify-center">
+                            <Shield className="h-10 w-10 text-teal-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">Secure Document Management</h4>
+                            <p className="text-base text-gray-600 mb-3">Store and manage all your professional documents securely. Upload your CV, certificates, and references in one place.</p>
+                            <p className="text-sm text-gray-500 italic">Example: "Karishma uploaded all her documents once and uses them for every application - saves so much time!"</p>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border border-gray-200 shadow-sm bg-gray-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 flex items-center justify-center">
-                          <MessageSquare className="h-10 w-10 text-blue-600" />
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Right Column - Amanda AI */}
+                  <div className="flex-1 lg:flex-[1.5] w-full lg:sticky lg:top-8 lg:self-start lg:h-fit">
+                    <Card className="border-4 border-blue-400 shadow-2xl bg-gradient-to-br from-blue-100 via-purple-50 to-pink-50 transform hover:scale-[1.02] transition-transform duration-300">
+                      <CardContent className="p-10">
+                        <div className="text-center mb-8 relative">
+                          <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
+                            AI POWERED
+                          </div>
+                          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 via-purple-600 to-pink-500 mb-5 shadow-xl ring-4 ring-blue-200">
+                            <Bot className="h-12 w-12 text-white" />
+                          </div>
+                          <h4 className="text-3xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Amanda AI</h4>
+                          <p className="text-lg text-gray-700 font-medium">Your Personal Career Assistant</p>
+                          <p className="text-sm text-gray-500 mt-2">Powered by Advanced AI Technology</p>
                         </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">Direct Messaging</h4>
-                          <p className="text-base text-gray-600">Communicate directly with employers and ask questions</p>
+                        <div className="space-y-6">
+                          <div className="bg-white rounded-xl p-6 border-2 border-blue-300 shadow-lg hover:shadow-xl transition-shadow">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0">
+                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md">
+                                  <Sparkles className="h-7 w-7 text-white" />
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <h5 className="font-bold text-gray-900 mb-2 text-xl">AI Resume Creator</h5>
+                                <p className="text-base text-gray-700 leading-relaxed">Create professional, ATS-friendly resumes tailored to each job. Amanda analyzes job descriptions and optimizes your resume automatically.</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="bg-white rounded-xl p-6 border-2 border-blue-300 shadow-lg hover:shadow-xl transition-shadow">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0">
+                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md">
+                                  <FileText className="h-7 w-7 text-white" />
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <h5 className="font-bold text-gray-900 mb-2 text-xl">AI Application Letter</h5>
+                                <p className="text-base text-gray-700 leading-relaxed">Generate personalized cover letters in seconds. Amanda crafts compelling letters that highlight your unique fit for each position.</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="bg-white rounded-xl p-6 border-2 border-blue-300 shadow-lg hover:shadow-xl transition-shadow">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0">
+                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-md">
+                                  <Search className="h-7 w-7 text-white" />
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <h5 className="font-bold text-gray-900 mb-2 text-xl">Smart Job Matching</h5>
+                                <p className="text-base text-gray-700 leading-relaxed">Amanda learns your preferences and suggests jobs you'll love. Save time by focusing on opportunities that truly match your goals.</p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border border-gray-200 shadow-sm bg-gray-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 flex items-center justify-center">
-                          <Users className="h-10 w-10 text-blue-600" />
+                        
+                        {/* Example Application Letter Showcase */}
+                        <div className="mt-8 bg-white rounded-xl border-4 border-blue-400 shadow-xl overflow-hidden">
+                          <div className="bg-gradient-to-r from-blue-500 via-purple-600 to-pink-500 px-5 py-3">
+                            <h5 className="text-base font-bold text-white flex items-center gap-2">
+                              <FileText className="h-5 w-5" />
+                              Example Application Letter
+                            </h5>
+                          </div>
+                          <div className="p-4 max-h-64 overflow-y-auto">
+                            <div className="space-y-3 text-xs text-gray-700">
+                              <div>
+                                <p className="font-semibold mb-1">Dear Hiring Manager,</p>
+                                <p className="leading-relaxed">I am writing to express my strong interest in the Marketing Coordinator position at your company. With 3 years of experience in digital marketing and a proven track record of increasing brand engagement by 40%, I am excited about the opportunity to contribute to your team.</p>
+                              </div>
+                              <div>
+                                <p className="leading-relaxed">In my previous role at ABC Company, I successfully managed social media campaigns that reached over 50,000 users and developed content strategies that aligned with business objectives. My expertise in SEO, content creation, and analytics makes me an ideal candidate for this role.</p>
+                              </div>
+                              <div>
+                                <p className="leading-relaxed">I am particularly drawn to your company's commitment to innovation and would welcome the opportunity to discuss how my skills can help drive your marketing initiatives forward.</p>
+                              </div>
+                              <div>
+                                <p className="leading-relaxed">Thank you for considering my application. I look forward to hearing from you.</p>
+                                <p className="mt-2 font-semibold">Sincerely,<br />[Your Name]</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="bg-blue-50 px-4 py-2 border-t border-blue-200">
+                            <p className="text-xs text-gray-600 italic">✨ Generated by Amanda AI in 5 seconds</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">Save Jobs</h4>
-                          <p className="text-base text-gray-600">Bookmark your favorite positions for later review</p>
+                        
+                        <div className="mt-8 p-5 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-blue-300 shadow-md">
+                          <p className="text-base text-gray-800 italic leading-relaxed font-medium">"Amanda helped me create 5 tailored resumes in 10 minutes. I got 3 interviews!"</p>
+                          <p className="text-sm text-gray-600 mt-2 font-semibold">- Maria, Suva</p>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border border-gray-200 shadow-sm bg-gray-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 flex items-center justify-center">
-                          <Shield className="h-10 w-10 text-blue-600" />
-                        </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">Profile Management</h4>
-                          <p className="text-base text-gray-600">Create and manage your professional profile with documents</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               </div>
             )}
@@ -333,86 +439,145 @@ export default function HomePage() {
             {/* Business Features */}
             {activeTab === "business" && (
               <div className="w-full">
-                <h3 className="text-3xl font-bold text-gray-900 mb-8 text-center">For Companies (HR's + Managers) & Business Owners</h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="border border-gray-200 shadow-sm bg-gray-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 flex items-center justify-center">
-                          <Briefcase className="h-10 w-10 text-purple-600" />
+                <h3 className="text-3xl font-bold text-gray-900 mb-8 text-center">Why Choose Fastlink</h3>
+                <div className="flex flex-col lg:flex-row gap-8">
+                  {/* Left Column - Main Features */}
+                  <div className="flex-1 lg:flex-[2] space-y-6">
+                    <Card className="border border-gray-200 shadow-sm bg-gradient-to-br from-purple-50 to-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 flex items-center justify-center">
+                            <Briefcase className="h-10 w-10 text-purple-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">Post Jobs in Minutes</h4>
+                            <p className="text-base text-gray-600 mb-3">Create compelling job listings with our intuitive interface. Reach thousands of qualified candidates across Fiji instantly. Free listings available, or boost with Pro features for maximum visibility.</p>
+                            <p className="text-sm text-gray-500 italic">Example: "Tech Solutions posted a developer role and received 25 qualified applications in the first 24 hours!"</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">Post Jobs</h4>
-                          <p className="text-base text-gray-600">List your vacancies easily with detailed job descriptions</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border border-gray-200 shadow-sm bg-gradient-to-br from-blue-50 to-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 flex items-center justify-center">
+                            <Users className="h-10 w-10 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">Access Top Talent Pool</h4>
+                            <p className="text-base text-gray-600 mb-3">Connect with skilled professionals actively seeking opportunities. Our platform attracts motivated candidates from Suva, Nadi, Lautoka, and across Fiji.</p>
+                            <p className="text-sm text-gray-500 italic">Example: "Retail Plus found their store manager from a pool of 50+ applicants - the perfect match in just 5 days!"</p>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border border-gray-200 shadow-sm bg-gray-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 flex items-center justify-center">
-                          <Users className="h-10 w-10 text-purple-600" />
+                      </CardContent>
+                    </Card>
+                    <Card className="border border-gray-200 shadow-sm bg-gradient-to-br from-green-50 to-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 flex items-center justify-center">
+                            <Shield className="h-10 w-10 text-green-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">Streamlined Application Management</h4>
+                            <p className="text-base text-gray-600 mb-3">Organize, filter, and review applications with ease. Our smart system helps you identify top candidates quickly and manage your hiring pipeline efficiently.</p>
+                            <p className="text-sm text-gray-500 italic">Example: "Hospitality Group reviewed 30 applications in 2 hours using our filtering tools - saved 8 hours of work!"</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">Find Candidates</h4>
-                          <p className="text-base text-gray-600">Connect with talented job seekers across Fiji</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border border-gray-200 shadow-sm bg-gradient-to-br from-amber-50 to-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 flex items-center justify-center">
+                            <TrendingUp className="h-10 w-10 text-amber-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">Pro Features for Maximum Impact</h4>
+                            <p className="text-base text-gray-600 mb-3">Boost your job listings with featured placement, priority visibility, and advanced analytics. Get 3x more applications with Pro tier listings.</p>
+                            <p className="text-sm text-gray-500 italic">Example: "Rakesh's Pro listing got 80 applications vs 15 for free - he hired the perfect candidate in 1 week!"</p>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border border-gray-200 shadow-sm bg-gray-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 flex items-center justify-center">
-                          <Shield className="h-10 w-10 text-purple-600" />
+                      </CardContent>
+                    </Card>
+                    <Card className="border border-gray-200 shadow-sm bg-gradient-to-br from-pink-50 to-white">
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 flex items-center justify-center">
+                            <MessageSquare className="h-10 w-10 text-pink-600" />
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">Direct Candidate Communication</h4>
+                            <p className="text-base text-gray-600 mb-3">Engage with candidates before they apply. Answer questions, provide details, and build relationships that lead to better hires.</p>
+                            <p className="text-sm text-gray-500 italic">Example: "Leo answered 5 candidate questions and found his ideal hire through meaningful conversations!"</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">Manage Applications</h4>
-                          <p className="text-base text-gray-600">Review, filter, and organize candidate applications</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Right Column - Amanda AI */}
+                  <div className="flex-1 lg:flex-[1.5]">
+                    <Card className="border-4 border-purple-400 shadow-2xl bg-gradient-to-br from-purple-100 via-blue-50 to-pink-50 sticky top-8 transform hover:scale-[1.02] transition-transform duration-300">
+                      <CardContent className="p-10">
+                        <div className="text-center mb-8 relative">
+                          <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
+                            AI POWERED
+                          </div>
+                          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 via-pink-600 to-red-500 mb-5 shadow-xl ring-4 ring-purple-200">
+                            <Bot className="h-12 w-12 text-white" />
+                          </div>
+                          <h4 className="text-3xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Amanda AI</h4>
+                          <p className="text-lg text-gray-700 font-medium">Your Hiring Intelligence Assistant</p>
+                          <p className="text-sm text-gray-500 mt-2">Powered by Advanced AI Technology</p>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border border-gray-200 shadow-sm bg-gray-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 flex items-center justify-center">
-                          <TrendingUp className="h-10 w-10 text-purple-600" />
+                        <div className="space-y-6">
+                          <div className="bg-white rounded-xl p-6 border-2 border-purple-300 shadow-lg hover:shadow-xl transition-shadow">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0">
+                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md">
+                                  <Sparkles className="h-7 w-7 text-white" />
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <h5 className="font-bold text-gray-900 mb-2 text-xl">AI Candidate Selection</h5>
+                                <p className="text-base text-gray-700 leading-relaxed">Amanda analyzes applications and ranks candidates based on job requirements. Save hours of manual screening.</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="bg-white rounded-xl p-6 border-2 border-purple-300 shadow-lg hover:shadow-xl transition-shadow">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0">
+                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md">
+                                  <Users className="h-7 w-7 text-white" />
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <h5 className="font-bold text-gray-900 mb-2 text-xl">Smart Candidate Matching</h5>
+                                <p className="text-base text-gray-700 leading-relaxed">Get AI-powered recommendations of the best-fit candidates. Amanda learns your preferences and suggests top matches.</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="bg-white rounded-xl p-6 border-2 border-purple-300 shadow-lg hover:shadow-xl transition-shadow">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0">
+                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-md">
+                                  <FileText className="h-7 w-7 text-white" />
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <h5 className="font-bold text-gray-900 mb-2 text-xl">Application Review Assistant</h5>
+                                <p className="text-base text-gray-700 leading-relaxed">Amanda helps you review applications faster by highlighting key qualifications and flagging top candidates.</p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">Pro Features</h4>
-                          <p className="text-base text-gray-600">Boost visibility with featured listings and promotions</p>
+                        <div className="mt-8 p-5 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border-2 border-purple-300 shadow-md">
+                          <p className="text-base text-gray-800 italic leading-relaxed font-medium">"Amanda helped us identify 3 perfect candidates from 50 applications in minutes!"</p>
+                          <p className="text-sm text-gray-600 mt-2 font-semibold">- Tech Solutions, Suva</p>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border border-gray-200 shadow-sm bg-gray-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 flex items-center justify-center">
-                          <MessageSquare className="h-10 w-10 text-purple-600" />
-                        </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">Candidate Messaging</h4>
-                          <p className="text-base text-gray-600">Communicate directly with applicants and schedule interviews</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border border-gray-200 shadow-sm bg-gray-50">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 flex items-center justify-center">
-                          <FileText className="h-10 w-10 text-purple-600" />
-                        </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">Analytics Dashboard</h4>
-                          <p className="text-base text-gray-600">Track job performance and application metrics</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               </div>
             )}
@@ -422,7 +587,7 @@ export default function HomePage() {
 
       {/* Testimonials Section */}
       <div className="bg-purple-600 py-12 px-4 lg:px-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center">
             {/* Testimonials on the left */}
             <div className="flex-1">

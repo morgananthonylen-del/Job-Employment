@@ -448,7 +448,7 @@ export default function JobSeekerLoginPage() {
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-500 text-2xl font-semibold drop-shadow-[0_6px_12px_rgba(251,191,36,0.35)]">
               ⚡
             </span>
-            <span>FastLink 1.0</span>
+            <span>FastLink</span>
           </Link>
         </div>
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">

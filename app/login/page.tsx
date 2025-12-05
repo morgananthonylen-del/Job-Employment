@@ -49,7 +49,7 @@ function ShareMode() {
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-500 text-xl font-semibold drop-shadow-[0_6px_12px_rgba(251,191,36,0.35)]">
                 ⚡
               </span>
-              <span>FastLink 1.0</span>
+              <span>FastLink</span>
             </span>
           </h2>
           <p className="text-sm text-gray-600 leading-relaxed">
