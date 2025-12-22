@@ -2,6 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   GLOBAL YELLOW BACKGROUND REMOVAL - PERMANENT FIX
+   This removes ANY yellow background from the entire application
+   ============================================ */
+
+/* Force proper backgrounds on root elements */
+html {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+html.dark {
+  background-color: hsl(222.2, 84%, 4.9%) !important;
+  background: hsl(222.2, 84%, 4.9%) !important;
+}
+
+body {
+  background-color: #f3f4f6 !important; /* grey-100 for light mode */
+  background: #f3f4f6 !important;
+}
+
+body.dark {
+  background-color: hsl(222.2, 84%, 4.9%) !important;
+  background: hsl(222.2, 84%, 4.9%) !important;
+}
+
+/* Remove any yellow color values from inline styles */
+[style*="#ffff00"],
+[style*="#FFFF00"],
+[style*="#ffeb3b"],
+[style*="#ffc107"],
+[style*="#ffd700"],
+[style*="yellow"] {
+  background: inherit !important;
+  background-color: inherit !important;
+}
+
+/* Force remove yellow from any element that might have it */
+*[style*="background"][style*="yellow"],
+*[style*="background-color"][style*="yellow"] {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* React Media Promotion - Force blue background with white text */
+.react-media-promo {
+  background-color: #2563eb !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.react-media-promo * {
+  color: #ffffff !important;
+}
+
+.react-media-promo a {
+  background-color: #ffffff !important;
+  color: #2563eb !important;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -195,11 +255,20 @@ button[data-radix-select-trigger],
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-source-sans), system-ui, sans-serif;
     font-size: 1.0625rem; /* ~17px for improved readability */
     line-height: 1.65;
+    /* Force proper background - NO YELLOW */
+    background-color: #f3f4f6 !important; /* grey-100 for light mode */
+    background: #f3f4f6 !important;
+  }
+  
+  body.dark {
+    background-color: hsl(var(--background)) !important;
+    background: hsl(var(--background)) !important;
   }
 
   /* Make images unselectable */
@@ -301,6 +370,24 @@ button[data-radix-select-trigger],
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+/* FORCE REMOVE #FFFF00 YELLOW FROM ENTIRE PAGE - GLOBAL FIX */
+html,
+html *,
+body,
+body * {
+  background-color: inherit !important;
+}
+
+html {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+html.dark {
+  background-color: hsl(var(--background)) !important;
+  background: hsl(var(--background)) !important;
 }
 
 /* FORCE REMOVE #FFFF00 YELLOW FROM ALL POPUPS, DIALOGS, TOASTS, MODALS - NO YELLOW EVER */

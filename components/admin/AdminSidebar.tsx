@@ -11,6 +11,9 @@ import {
   Settings,
   LogOut,
   Shield,
+  Building2,
+  ExternalLink,
+  Image,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -34,6 +37,16 @@ const menuItems = [
     title: "Applications",
     href: "/admin/applications",
     icon: FileText,
+  },
+  {
+    title: "Business Pages",
+    href: "/admin/company-pages",
+    icon: Building2,
+  },
+  {
+    title: "Slider Images",
+    href: "/admin/slider-images",
+    icon: Image,
   },
   {
     title: "Settings",
@@ -77,7 +90,17 @@ export default function AdminSidebar() {
         })}
       </nav>
 
-      <div className="absolute bottom-0 w-64 p-4 border-t border-gray-200">
+      <div className="absolute bottom-0 w-64 p-4 border-t border-gray-200 space-y-2">
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-gray-700 hover:bg-gray-50"
+          onClick={() => {
+            window.open("/", "_blank");
+          }}
+        >
+          <ExternalLink className="h-5 w-5 mr-3" />
+          View Site
+        </Button>
         <Button
           variant="ghost"
           className="w-full justify-start text-gray-700 hover:bg-gray-50"

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { NetworkStatusToast } from "@/components/network-status-toast";
 import { Footer } from "@/components/footer";
+import { Navbar } from "@/components/navbar";
 
 const inter = Inter({
   subsets: ["latin"],
