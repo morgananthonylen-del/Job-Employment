@@ -3,14 +3,9 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Zap, Building2, Briefcase } from "lucide-react";
+import { Zap, Building2, Briefcase, Gavel, FileText, UserCircle, Megaphone } from "lucide-react";
 
-interface NavbarProps {
-  activeSection?: "directory" | "jobs";
-  onSectionChange?: (section: "directory" | "jobs") => void;
-}
-
-export function Navbar({ activeSection = "jobs", onSectionChange }: NavbarProps) {
+export function Navbar() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -19,10 +14,8 @@ export function Navbar({ activeSection = "jobs", onSectionChange }: NavbarProps)
     setMounted(true);
   }, []);
 
-  // Hide navbar on login, register, admin, and authenticated pages
+  // Hide navbar on register, admin, and authenticated pages (show on login)
   const hideNavbar = 
-    pathname === "/login" || 
-    pathname?.startsWith("/login/") ||
     pathname?.startsWith("/register/") ||
     pathname?.startsWith("/admin/") ||
     pathname?.startsWith("/jobseeker/") ||
@@ -33,16 +26,17 @@ export function Navbar({ activeSection = "jobs", onSectionChange }: NavbarProps)
     return null;
   }
 
-  const handleSectionClick = (section: "directory" | "jobs") => {
-    if (onSectionChange) {
-      onSectionChange(section);
-    }
-    setMobileOpen(false);
-  };
+  const isJobs = pathname === "/jobs";
+  const isDirectory = pathname === "/directory";
+  const isMarketPlace = pathname === "/market-place";
+  const isShoutouts = pathname === "/shoutouts";
+  const isGetListed = pathname === "/get-listed";
+  const isQuote = pathname === "/quote";
+  const isLogin = pathname === "/login" || pathname?.startsWith("/login/");
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: Logo */}
           <div className="flex items-center gap-2">
@@ -58,49 +52,87 @@ export function Navbar({ activeSection = "jobs", onSectionChange }: NavbarProps)
           <div className="hidden md:flex items-center justify-between flex-1 ml-8">
             {/* Left side options */}
             <div className="flex items-center gap-1">
-              <button
-                onClick={() => handleSectionClick("jobs")}
+              <Link
+                href="/jobs"
                 className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
-                  activeSection === "jobs"
-                    ? "text-blue-600"
-                    : "text-gray-600 hover:text-gray-900"
+                  isJobs ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 <Briefcase className="h-4 w-4" />
                 Job Search
-                {activeSection === "jobs" && (
+                {isJobs && (
                   <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
                 )}
-              </button>
-              <button
-                onClick={() => handleSectionClick("directory")}
+              </Link>
+              <Link
+                href="/directory"
                 className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
-                  activeSection === "directory"
-                    ? "text-blue-600"
-                    : "text-gray-600 hover:text-gray-900"
+                  isDirectory ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 <Building2 className="h-4 w-4" />
                 Business Directory
-                {activeSection === "directory" && (
+                {isDirectory && (
                   <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
                 )}
-              </button>
+              </Link>
+              <Link
+                href="/auctions"
+                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                  isMarketPlace ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <Gavel className="h-4 w-4" />
+                Market Place
+                {isMarketPlace && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
+                )}
+              </Link>
+              <Link
+                href="/shoutouts"
+                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                  isShoutouts ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <Megaphone className="h-4 w-4" />
+                Shoutouts
+                {isShoutouts && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
+                )}
+              </Link>
+              <Link
+                href="/quote"
+                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                  isQuote ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <FileText className="h-4 w-4" />
+                Get Quote
+              </Link>
+              <Link
+                href="/get-listed"
+                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                  isGetListed ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <Building2 className="h-4 w-4" />
+                Get Listed
+              </Link>
             </div>
 
             {/* Right side links */}
             <div className="flex items-center gap-4">
               <Link
-                href="/get-listed"
-                className="text-blue-600 font-medium hover:text-blue-700 transition-colors"
-              >
-                Get Listed
-              </Link>
-              <Link
                 href="/login/jobseeker"
-                className="text-blue-600 font-medium hover:text-blue-700 transition-colors"
+                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                  isLogin ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
+                }`}
               >
-                Job Seeker Login
+                <UserCircle className="h-5 w-5" />
+                Login
+                {isLogin && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
+                )}
               </Link>
             </div>
           </div>
@@ -140,45 +172,75 @@ export function Navbar({ activeSection = "jobs", onSectionChange }: NavbarProps)
         </div>
       </div>
 
-      {/* Mobile dropdown menu */}
+      {/* Mobile dropdown menu (overlay, does not push content) */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white">
+        <div className="md:hidden absolute inset-x-0 top-16 border-t border-gray-200 bg-white shadow-lg">
           <div className="px-4 pt-2 pb-3 space-y-1">
-            <button
-              onClick={() => handleSectionClick("jobs")}
+            <Link
+              href="/jobs"
+              onClick={() => setMobileOpen(false)}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${
-                activeSection === "jobs"
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-700 hover:bg-gray-50"
+                isJobs ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
               }`}
             >
               <Briefcase className="h-4 w-4" />
               Job Search
-            </button>
-            <button
-              onClick={() => handleSectionClick("directory")}
+            </Link>
+            <Link
+              href="/directory"
+              onClick={() => setMobileOpen(false)}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${
-                activeSection === "directory"
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-700 hover:bg-gray-50"
+                isDirectory ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
               }`}
             >
               <Building2 className="h-4 w-4" />
               Business Directory
-            </button>
+            </Link>
+            <Link
+              href="/market-place"
+              onClick={() => setMobileOpen(false)}
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${
+                isMarketPlace ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <Gavel className="h-4 w-4" />
+              Market Place
+            </Link>
+            <Link
+              href="/shoutouts"
+              onClick={() => setMobileOpen(false)}
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${
+                isShoutouts ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <Megaphone className="h-4 w-4" />
+              Shoutouts
+            </Link>
+            <Link
+              href="/quote"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              <FileText className="h-4 w-4" />
+              Get Quote
+            </Link>
             <Link
               href="/get-listed"
               onClick={() => setMobileOpen(false)}
-              className="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
+              <Building2 className="h-4 w-4" />
               Get Listed
             </Link>
             <Link
               href="/login/jobseeker"
               onClick={() => setMobileOpen(false)}
-              className="block px-3 py-2 rounded-md text-sm font-medium text-blue-600 hover:bg-gray-50"
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${
+                isLogin ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
+              }`}
             >
-              Job Seeker Login
+              <UserCircle className="h-5 w-5" />
+              Login
             </Link>
           </div>
         </div>

@@ -40,6 +40,7 @@ export default function RootLayout({
     >
       <body className={`${sourceSans.className} overflow-x-hidden`} suppressHydrationWarning>
         <ThemeProvider>
+          <Navbar />
           {children}
           <Footer />
           <NetworkStatusToast />

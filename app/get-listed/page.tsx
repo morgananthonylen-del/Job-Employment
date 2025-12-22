@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Building2, Mail, Phone, Send } from "lucide-react";
-import { Navbar } from "@/components/navbar";
 
 export default function GetListedPage() {
   const { toast } = useToast();
@@ -57,8 +56,6 @@ export default function GetListedPage() {
   };
 
   return (
-    <>
-      <Navbar />
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
@@ -247,6 +244,5 @@ export default function GetListedPage() {
         </Card>
         </div>
       </div>
-    </>
   );
 }
