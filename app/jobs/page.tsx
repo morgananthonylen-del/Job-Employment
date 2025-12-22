@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Search, Briefcase, MapPin, Clock } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
 
@@ -20,9 +20,12 @@ interface Job {
 }
 
 export default function JobsPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [pendingJobId, setPendingJobId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -43,15 +46,36 @@ export default function JobsPage() {
     fetchJobs();
   }, []);
 
-  const filteredJobs = jobs.filter((job) => {
-    const term = searchQuery.trim().toLowerCase();
-    if (!term) return true;
-    return (
-      job.title?.toLowerCase().includes(term) ||
-      job.location?.toLowerCase().includes(term) ||
-      job.business?.company_name?.toLowerCase().includes(term)
-    );
-  });
+  const filteredJobs = jobs
+    .filter((job) => {
+      const term = searchQuery.trim().toLowerCase();
+      if (!term) return true;
+      return (
+        job.title?.toLowerCase().includes(term) ||
+        job.location?.toLowerCase().includes(term) ||
+        job.business?.company_name?.toLowerCase().includes(term)
+      );
+    })
+    .sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateB - dateA; // Latest first (descending)
+    })
+    .slice(0, 20); // Limit to 20 results
+
+  const handleJobClick = (jobId: string) => {
+    if (typeof window === "undefined") return;
+
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+
+    if (token && user) {
+      router.push(`/jobseeker/jobs/${jobId}`);
+    } else {
+      setPendingJobId(jobId);
+      setShowLoginPrompt(true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black">
@@ -100,64 +124,107 @@ export default function JobsPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredJobs.map((job) => (
-                <Link
-                  key={job.id}
-                  href={`/jobseeker/jobs/${job.id}`}
-                  className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
-                >
-                  <div className="flex items-start gap-4">
-                    {job.business?.company_logo_url && (
-                      <img
-                        src={job.business.company_logo_url}
-                        alt={job.business.company_name || "Business"}
-                        className="w-16 h-16 object-contain rounded"
-                      />
-                    )}
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                        {job.title}
-                      </h3>
-                      {job.business?.company_name && (
-                        <p className="text-sm text-gray-600 mb-2">
-                          {job.business.company_name}
-                        </p>
+            <div className="max-w-4xl mx-auto">
+              <div className="space-y-0 bg-white rounded-lg shadow-md overflow-hidden">
+                {filteredJobs.map((job) => (
+                  <button
+                    key={job.id}
+                    type="button"
+                    onClick={() => handleJobClick(job.id)}
+                    className="w-full text-left px-6 py-4 hover:bg-gray-50 transition-colors border-b border-gray-200 last:border-b-0"
+                  >
+                    <div className="flex items-start gap-4">
+                      {job.business?.company_logo_url && (
+                        <img
+                          src={job.business.company_logo_url}
+                          alt={job.business.company_name || "Business"}
+                          className="w-12 h-12 object-contain rounded flex-shrink-0"
+                        />
                       )}
-                      <div className="flex flex-wrap gap-3 text-sm text-gray-500">
-                        {job.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-4 w-4" />
-                            {job.location}
-                          </span>
-                        )}
-                        {job.job_type && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {job.job_type}
-                          </span>
-                        )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                          {job.title}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                          {job.business?.company_name && (
+                            <span className="font-medium">{job.business.company_name}</span>
+                          )}
+                          {job.location && (
+                            <span className="flex items-center gap-1 text-gray-500">
+                              <MapPin className="h-4 w-4" />
+                              {job.location}
+                            </span>
+                          )}
+                          {job.job_type && (
+                            <span className="flex items-center gap-1 text-gray-500">
+                              <Clock className="h-4 w-4" />
+                              {job.job_type}
+                            </span>
+                          )}
+                          {job.created_at && (
+                            <span className="text-xs text-gray-400">
+                              {formatRelativeTime(job.created_at)}
+                            </span>
+                          )}
+                          {job.salary && (
+                            <span className="text-sm font-medium text-blue-600">
+                              {job.salary}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      {job.salary && (
-                        <p className="text-sm font-medium text-blue-600 mt-2">
-                          {job.salary}
-                        </p>
-                      )}
-                      {job.created_at && (
-                        <p className="text-xs text-gray-400 mt-2">
-                          {formatRelativeTime(job.created_at)}
-                        </p>
-                      )}
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Login required popup for FastLink users */}
+      {showLoginPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl p-6 space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900">Login required</h2>
+            <p className="text-sm text-gray-700">
+              Job details are available for FastLink Users. Please log in to your account first,
+              then you can open and apply for this job.
+            </p>
+            <div className="space-y-2 text-sm text-gray-600">
+              <p className="font-medium text-gray-800">FastLink User (Job Seeker)</p>
+              <p>Use your job seeker login to view full job information and apply.</p>
+            </div>
+            <div className="flex flex-col gap-2 mt-2">
+              <button
+                type="button"
+                onClick={() => router.push("/login/jobseeker")}
+                className="w-full rounded-md bg-blue-600 text-white text-sm font-medium py-2.5 hover:bg-blue-700 transition"
+              >
+                Login as FastLink User
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/register/jobseeker")}
+                className="w-full rounded-md border border-gray-300 text-sm font-medium py-2.5 text-gray-800 hover:bg-gray-50 transition"
+              >
+                Create a free FastLink User account
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLoginPrompt(false);
+                  setPendingJobId(null);
+                }}
+                className="w-full rounded-md text-sm font-medium py-2 text-gray-500 hover:text-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
 

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { ArrowLeft, Eye, EyeOff, Zap } from "lucide-react";
 import { Roboto } from "next/font/google";
 import { Montserrat } from "next/font/google";
@@ -247,7 +246,6 @@ export default function JobSeekerRegisterPage() {
           </div>
         );
       })()}
-          <GoogleAuthButton intent="signup" userType="jobseeker" label="Sign up with Google" />
       </div>
     );
 
@@ -697,11 +695,6 @@ export default function JobSeekerRegisterPage() {
               />
             </div>
 
-            <span className="mt-3 text-xs font-medium uppercase tracking-wide text-gray-400">or</span>
-
-            <div className="mt-2">
-        <GoogleAuthButton intent="signup" userType="jobseeker" label="Sign up with Google" />
-            </div>
         <Link
           href="/"
               className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:underline"

@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { Mail, ArrowLeft, Zap } from "lucide-react";
-import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { Roboto } from "next/font/google";
 import { Montserrat } from "next/font/google";
 import { Open_Sans } from "next/font/google";
@@ -410,9 +409,6 @@ export default function BusinessLoginPage() {
 
   const footerLinks = (
     <>
-      <div className="w-full max-w-md">
-        <GoogleAuthButton intent="login" userType="business" label="Continue with Google" />
-      </div>
       <Link href="/" className="flex items-center gap-2 text-gray-700 text-base font-medium">
         <ArrowLeft className="h-4 w-4" />
         <span>Back to Home</span>
@@ -481,7 +477,6 @@ export default function BusinessLoginPage() {
                 </p>
               );
             })()}
-            <GoogleAuthButton intent="login" userType="business" label="Continue with Google" />
           </div>
         </div>
       </div>

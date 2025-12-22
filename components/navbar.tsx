@@ -77,7 +77,7 @@ export function Navbar() {
                 )}
               </Link>
               <Link
-                href="/auctions"
+                href="/market-place"
                 className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
                   isMarketPlace ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
                 }`}
@@ -123,7 +123,7 @@ export function Navbar() {
             {/* Right side links */}
             <div className="flex items-center gap-4">
               <Link
-                href="/login/jobseeker"
+                href="/login"
                 className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
                   isLogin ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
                 }`}
@@ -233,7 +233,7 @@ export function Navbar() {
               Get Listed
             </Link>
             <Link
-              href="/login/jobseeker"
+              href="/login"
               onClick={() => setMobileOpen(false)}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${
                 isLogin ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"

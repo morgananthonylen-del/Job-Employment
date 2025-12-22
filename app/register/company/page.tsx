@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { Mail } from "lucide-react";
-import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { Roboto } from "next/font/google";
 import { Open_Sans } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -191,7 +190,6 @@ export default function CompanyRegisterPage() {
           </div>
         );
       })()}
-      <GoogleAuthButton intent="signup" userType="business" label="Sign up with Google" />
     </div>
   );
 
