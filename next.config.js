@@ -1,8 +1,12 @@
 /** @type {import('next').NextConfig} */
+const path = require('path');
+
 const nextConfig = {
   reactStrictMode: true,
   compress: true,
   poweredByHeader: false,
+  // Explicitly set the workspace root to silence lockfile warning
+  outputFileTracingRoot: path.resolve(__dirname),
   // Disable source maps in production for better performance
   productionBrowserSourceMaps: false,
   images: {

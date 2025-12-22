@@ -54,6 +54,36 @@ export default function HomePage() {
   const [featuredJobs, setFeaturedJobs] = useState<Job[]>([]);
   const [sliderImages, setSliderImages] = useState<SliderImage[]>([]);
   const [currentSliderIndex, setCurrentSliderIndex] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState<Set<string>>(new Set());
+
+  // Reset slider index when images change
+  useEffect(() => {
+    if (sliderImages.length > 0 && currentSliderIndex >= sliderImages.length) {
+      setCurrentSliderIndex(0);
+    }
+  }, [sliderImages.length, currentSliderIndex]);
+
+  // Preload all slider images for faster display
+  useEffect(() => {
+    if (sliderImages.length === 0) return;
+
+    const preloadImages = () => {
+      sliderImages.forEach((image) => {
+        if (!image.image_url) return;
+        
+        const img = new Image();
+        img.onload = () => {
+          setImagesLoaded((prev) => new Set(prev).add(image.image_url));
+        };
+        img.onerror = () => {
+          console.error("Failed to preload image:", image.image_url);
+        };
+        img.src = image.image_url;
+      });
+    };
+
+    preloadImages();
+  }, [sliderImages]);
   const [loading, setLoading] = useState(false);
   const [jobsLoading, setJobsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -155,10 +185,27 @@ export default function HomePage() {
 
   const fetchSliderImages = async () => {
     try {
-      const response = await fetch("/api/slider-images");
+      const response = await fetch("/api/slider-images", {
+        cache: "force-cache", // Cache the API response
+      });
+      
       if (response.ok) {
         const data = await response.json();
-        setSliderImages(data || []);
+        const images = data || [];
+        setSliderImages(images);
+        // Reset to first image when new images load
+        if (images.length > 0) {
+          setCurrentSliderIndex(0);
+          // Immediately preload the first image
+          const firstImage = images[0];
+          if (firstImage?.image_url) {
+            const img = new Image();
+            img.src = firstImage.image_url;
+          }
+        }
+    } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Failed to fetch slider images:", errorData);
       }
     } catch (error) {
       console.error("Error fetching slider images:", error);
@@ -175,6 +222,7 @@ export default function HomePage() {
 
     return () => clearInterval(timer);
   }, [sliderImages.length]);
+
 
   const fetchFeaturedBusinesses = async () => {
     try {
@@ -338,50 +386,13 @@ export default function HomePage() {
 
   return (
     <>
-      <div className="min-h-screen bg-black">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Hero Section with Background Slider */}
-          <section className="mb-10 relative h-[500px] md:h-[600px] rounded-lg overflow-hidden">
-            {/* Background Slider */}
-            {sliderImages.length > 0 ? (
-              <>
-                {sliderImages.map((image, index) => (
-                  <div
-                    key={image.id}
-                    className={`absolute inset-0 transition-opacity duration-1000 ${
-                      index === currentSliderIndex ? "opacity-100" : "opacity-0"
-                    }`}
-                  >
-                    <img
-                      src={image.image_url}
-                      alt={image.title || "Hero background"}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-                {/* Slider navigation dots */}
-                {sliderImages.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                    {sliderImages.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentSliderIndex(index)}
-                        className={`h-2 rounded-full transition-all ${
-                          index === currentSliderIndex ? "bg-white w-8" : "bg-white/50 w-2"
-                        }`}
-                        aria-label={`Go to slide ${index + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="absolute inset-0 bg-black" />
-            )}
-            
-            {/* Hero Content */}
-            <div className="relative z-10 h-full flex items-center">
-              <div className="max-w-xl px-6 md:px-10 py-6 md:py-8 bg-white/95 rounded-xl shadow-2xl">
+      {/* Hero Section - Text and Image Same Height, Touching */}
+      <section className="mb-10 bg-black">
+        <div className="max-w-7xl mx-auto w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2" style={{ height: "500px", gap: 0 }}>
+            {/* Hero Content - Left Side */}
+            <div className="flex items-center h-full px-4 md:px-8" style={{ paddingRight: 0 }}>
+              <div className="w-full px-6 md:px-10 py-6 md:py-8 bg-white/90 shadow-2xl backdrop-blur-sm h-full flex flex-col justify-center">
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
                   Find work. Find businesses.
                 </h1>
@@ -407,13 +418,67 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-          </section>
 
+            {/* Hero Slider - Right Side, Same Height, Touching */}
+            <div className="relative overflow-hidden bg-gray-200 h-full shadow-2xl" style={{ marginLeft: 0 }}>
+              {sliderImages.length > 0 ? (
+                <>
+                  {sliderImages.map((image, index) => {
+                    const isActive = index === currentSliderIndex;
+                    return (
+                      <div
+                        key={image.id || `img-${index}`}
+                        className="absolute inset-0"
+                        style={{
+                          opacity: isActive ? 1 : 0,
+                          transition: "opacity 1s ease-in-out",
+                          zIndex: isActive ? 2 : 1,
+                        }}
+                      >
+                        <img
+                          src={image.image_url}
+                          alt={image.title || "Hero slide"}
+                          className="w-full h-full object-cover"
+                          onError={() => {
+                            console.error("Hero slider image failed to load:", image.image_url);
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+
+                  {sliderImages.length > 1 && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+                      {sliderImages.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentSliderIndex(index)}
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            index === currentSliderIndex ? "bg-white w-8" : "bg-white/50 w-2 hover:bg-white/75"
+                          }`}
+                          aria-label={`Go to slide ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="absolute inset-0 bg-gray-300" />
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <div className="min-h-screen bg-black">
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Featured Jobs */}
           {featuredJobs.length > 0 && (
             <div className="mb-12">
               <div className="flex items-center justify-between mb-4 max-w-4xl mx-auto">
-                <div>
+                              <div>
                   <h2 className="text-2xl font-bold text-white">Featured Jobs</h2>
                   <p className="text-gray-400 text-sm">Hand-picked opportunities from businesses on FastLink</p>
                 </div>
@@ -472,12 +537,12 @@ export default function HomePage() {
                             )}
                           </div>
                         </div>
-                      </div>
+                          </div>
                     </Link>
                   ))}
-                </div>
-              </div>
-            </div>
+                              </div>
+                            </div>
+                          </div>
           )}
 
           {/* Featured Businesses Section */}
@@ -487,14 +552,14 @@ export default function HomePage() {
                 <div>
                   <h2 className="text-2xl font-bold text-white">Featured Businesses</h2>
                   <p className="text-gray-400 text-sm">Discover businesses showcasing themselves on FastLink</p>
-                </div>
+                                </div>
                 <Link
                   href="/directory"
                   className="text-sm font-medium text-blue-400 hover:text-blue-300 underline underline-offset-4"
                 >
                   View business directory
                 </Link>
-              </div>
+                              </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {featuredBusinesses.map((business) => (
                   <Link
@@ -523,9 +588,9 @@ export default function HomePage() {
                         <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                           {business.company_description}
                         </p>
-                      )}
-                    </div>
-                  </Link>
+            )}
+          </div>
+                </Link>
                 ))}
               </div>
             </div>

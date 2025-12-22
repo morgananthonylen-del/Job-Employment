@@ -44,7 +44,7 @@ const menuItems = [
     icon: Building2,
   },
   {
-    title: "Slider Images",
+    title: "Hero Slides",
     href: "/admin/slider-images",
     icon: Image,
   },

@@ -1,14 +1,23 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useRef, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, Image as ImageIcon, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, Loader2, Edit } from "lucide-react";
 
 interface SliderImage {
   id: string;
@@ -26,211 +35,247 @@ export default function AdminSliderImagesPage() {
   const { toast } = useToast();
   const [sliderImages, setSliderImages] = useState<SliderImage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingImage, setEditingImage] = useState<SliderImage | null>(null);
-  const [formData, setFormData] = useState({
-    image_url: "",
-    title: "",
-    description: "",
-    link_url: "",
-    display_order: 0,
-    is_active: true,
-  });
-  const [cropData, setCropData] = useState({
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 100,
-  });
-  const [imagePreview, setImagePreview] = useState<string>("");
-  const [showCrop, setShowCrop] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [editingImageId, setEditingImageId] = useState<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [isCropDialogOpen, setIsCropDialogOpen] = useState(false);
+  const [cropImage, setCropImage] = useState<string | null>(null);
+  const [cropArea, setCropArea] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [imageToCrop, setImageToCrop] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
-  const cropBoxRef = useRef<HTMLDivElement>(null);
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const editFileInputRef = useRef<HTMLInputElement | null>(null);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    fetchSliderImages();
+    // Sync from bucket on initial load to catch any images that were uploaded but not saved
+    fetchSliderImages(true);
   }, []);
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging || !imageRef.current) return;
-      
-      const rect = imageRef.current.getBoundingClientRect();
-      const newX = Math.max(0, Math.min(e.clientX - dragStart.x - rect.left, rect.width - cropData.width));
-      const newY = Math.max(0, Math.min(e.clientY - dragStart.y - rect.top, rect.height - cropData.height));
-      
-      setCropData(prev => ({
-        ...prev,
-        x: newX,
-        y: newY,
-      }));
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    if (isDragging) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
+  // Helper function to get auth headers
+  const getAuthHeaders = (): HeadersInit => {
+    const headers: HeadersInit = {};
+    
+    // Check if admin is logged in (from localStorage)
+    if (typeof window !== "undefined" && localStorage.getItem("admin_logged_in") === "true") {
+      headers["x-admin-logged-in"] = "true";
     }
+    
+    // Also try to get JWT token from localStorage if it exists
+    const token = typeof window !== "undefined" && localStorage.getItem("token");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    
+    return headers;
+  };
 
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isDragging, dragStart, cropData.width, cropData.height]);
-
-  const fetchSliderImages = async () => {
+  const fetchSliderImages = async (syncFromBucket = false) => {
     try {
-      const response = await fetch("/api/admin/slider-images");
-      if (!response.ok) throw new Error("Failed to fetch slider images");
+      setLoading(true);
+      const url = syncFromBucket 
+        ? "/api/admin/slider-images?sync=true"
+        : "/api/admin/slider-images";
+      const response = await fetch(url, {
+        headers: getAuthHeaders(),
+      });
+      
       const data = await response.json();
-      setSliderImages(data);
+      
+      console.log("Fetch response:", { status: response.status, data });
+
+      if (!response.ok) {
+        const errorMsg =
+          data?.error ||
+          `Failed to fetch slider images (${response.status})`;
+        throw new Error(errorMsg);
+      }
+
+      // Ensure data is an array
+      const images = Array.isArray(data) ? data : [];
+      console.log("Setting slider images:", images);
+      setSliderImages(images);
     } catch (error: any) {
+      console.error("Fetch slider images error:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to load slider images",
+        description:
+          error.message ||
+          "Failed to load slider images. Make sure the slider_images table exists in your database.",
         variant: "destructive",
       });
+      setSliderImages([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
       toast({
-        title: "Error",
-        description: "Please select an image file",
+        title: "Invalid File Format",
+        description: "Please upload a JPG, PNG, WebP, or GIF image file.",
         variant: "destructive",
       });
+      // Reset file input
+      e.target.value = "";
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const imageUrl = event.target?.result as string;
-      setImagePreview(imageUrl);
-      setShowCrop(true);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleCrop = () => {
-    if (!imageRef.current || !canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const img = imageRef.current;
-    const scaleX = img.naturalWidth / img.width;
-    const scaleY = img.naturalHeight / img.height;
-
-    canvas.width = cropData.width * scaleX;
-    canvas.height = cropData.height * scaleY;
-
-    ctx.drawImage(
-      img,
-      cropData.x * scaleX,
-      cropData.y * scaleY,
-      cropData.width * scaleX,
-      cropData.height * scaleY,
-      0,
-      0,
-      cropData.width * scaleX,
-      cropData.height * scaleY
-    );
-
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const croppedUrl = URL.createObjectURL(blob);
-      setFormData({ ...formData, image_url: croppedUrl });
-      setShowCrop(false);
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
       toast({
-        title: "Success",
-        description: "Image cropped successfully. Upload the image to your server and paste the URL.",
+        title: "File Too Large",
+        description: "Image file is too large. Maximum file size is 10MB.",
+        variant: "destructive",
       });
-    }, "image/png");
+      // Reset file input
+      e.target.value = "";
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+
+      const uploadResponse = await fetch("/api/uploads/hero-slider", {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: uploadFormData,
+      });
+
+      if (!uploadResponse.ok) {
+        const error = await uploadResponse
+          .json()
+          .catch(() => ({ message: "Failed to upload image" }));
+        throw new Error(error.message || "Failed to upload image");
+      }
+
+      const { url } = await uploadResponse.json();
+      console.log("Image uploaded successfully, URL:", url);
+
+      // Immediately save to database with is_active: true
+      try {
+        const saveResponse = await fetch("/api/admin/slider-images", {
+          method: "POST",
+          headers: {
+            ...getAuthHeaders(),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            image_url: url,
+            title: null,
+            description: null,
+            link_url: null,
+            display_order: 0,
+            is_active: true,
+          }),
+        });
+
+        if (!saveResponse.ok) {
+          const errorData = await saveResponse.json().catch(() => ({}));
+          console.error("Failed to save image to database:", errorData);
+          // Still show success for upload, but warn about database
+          toast({
+            title: "Image Uploaded",
+            description: "Image uploaded but failed to save to database. Syncing from bucket...",
+            variant: "default",
+          });
+          // Try sync as fallback
+          await fetchSliderImages(true);
+        } else {
+          console.log("Image saved to database successfully");
+          toast({
+            title: "Success",
+            description: "Image uploaded and saved successfully.",
+          });
+          // Refresh the list
+          await fetchSliderImages();
+        }
+      } catch (saveError: any) {
+        console.error("Error saving image to database:", saveError);
+        toast({
+          title: "Image Uploaded",
+          description: "Image uploaded but failed to save to database. Syncing from bucket...",
+          variant: "default",
+        });
+        // Try sync as fallback
+        await fetchSliderImages(true);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Upload Error",
+        description: error.message || "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (e.target) {
+        e.target.value = "";
+      }
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const url = editingImage
-        ? `/api/admin/slider-images/${editingImage.id}`
-        : "/api/admin/slider-images";
-      const method = editingImage ? "PUT" : "POST";
+  const handleDelete = async (id: string, imageUrl: string) => {
+    if (!confirm("Are you sure you want to delete this slider image? This will remove it from both the database and storage.")) return;
 
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+    try {
+      // Extract file path from URL
+      // URL format: https://...supabase.co/storage/v1/object/public/Heroe%20Slider%20Images/hero-slides/filename.jpg
+      const urlObj = new URL(imageUrl);
+      const pathParts = urlObj.pathname.split("/");
+      const bucketIndex = pathParts.findIndex(part => part.includes("Slider"));
+      let filePath = "";
+      
+      if (bucketIndex !== -1 && bucketIndex < pathParts.length - 1) {
+        // Get everything after the bucket name
+        filePath = pathParts.slice(bucketIndex + 1).join("/");
+        // Decode URL encoding
+        filePath = decodeURIComponent(filePath);
+      } else {
+        // Fallback: try to extract from pathname
+        const match = urlObj.pathname.match(/hero-slides\/.+$/);
+        if (match) {
+          filePath = match[0];
+        }
+      }
+
+      console.log("Deleting image:", { id, imageUrl, filePath });
+
+      const response = await fetch(`/api/admin/slider-images/${id}`, {
+        method: "DELETE",
+        headers: {
+          ...getAuthHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ filePath }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to save slider image");
+        const error = await response.json().catch(() => ({ error: "Failed to delete slider image" }));
+        throw new Error(error.error || "Failed to delete slider image");
       }
 
       toast({
         title: "Success",
-        description: editingImage
-          ? "Slider image updated successfully"
-          : "Slider image created successfully",
-      });
-
-      setIsDialogOpen(false);
-      resetForm();
-      fetchSliderImages();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save slider image",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEdit = (image: SliderImage) => {
-    setEditingImage(image);
-    setFormData({
-      image_url: image.image_url || "",
-      title: image.title || "",
-      description: image.description || "",
-      link_url: image.link_url || "",
-      display_order: image.display_order || 0,
-      is_active: image.is_active ?? true,
-    });
-    setImagePreview(image.image_url);
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this slider image?")) return;
-
-    try {
-      const response = await fetch(`/api/admin/slider-images/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to delete slider image");
-
-      toast({
-        title: "Success",
-        description: "Slider image deleted successfully",
+        description: "Slider image deleted successfully from database and storage",
       });
 
       fetchSliderImages();
     } catch (error: any) {
+      console.error("Delete error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to delete slider image",
@@ -239,380 +284,523 @@ export default function AdminSliderImagesPage() {
     }
   };
 
-  const handleMoveOrder = async (id: string, direction: "up" | "down") => {
-    const image = sliderImages.find((img) => img.id === id);
-    if (!image) return;
+  const handleEditFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingImageId) return;
 
-    const currentOrder = image.display_order;
-    const newOrder = direction === "up" ? currentOrder - 1 : currentOrder + 1;
-
-    const swapImage = sliderImages.find((img) => img.display_order === newOrder);
-    if (!swapImage) return;
-
-    try {
-      await Promise.all([
-        fetch(`/api/admin/slider-images/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ display_order: newOrder }),
-        }),
-        fetch(`/api/admin/slider-images/${swapImage.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ display_order: currentOrder }),
-        }),
-      ]);
-
-      fetchSliderImages();
-    } catch (error: any) {
+    // Re-use the same validation rules as upload
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
       toast({
-        title: "Error",
-        description: "Failed to reorder images",
+        title: "Invalid File Format",
+        description: "Please upload a JPG, PNG, WebP, or GIF image file.",
         variant: "destructive",
       });
+      e.target.value = "";
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast({
+        title: "File Too Large",
+        description: "Image file is too large. Maximum file size is 10MB.",
+        variant: "destructive",
+      });
+      e.target.value = "";
+      return;
+    }
+
+    // Open crop dialog with the selected image
+    setImageToCrop(file);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setCropImage(event.target?.result as string);
+      setIsCropDialogOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCrop = () => {
+    if (!cropImage || !imageToCrop || !editingImageId || !canvasRef.current || !imageRef.current) return;
+
+    const canvas = canvasRef.current;
+    const img = imageRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Calculate scale factor between displayed and natural image size
+    const scaleX = img.naturalWidth / img.clientWidth;
+    const scaleY = img.naturalHeight / img.clientHeight;
+
+    // Calculate actual crop coordinates in natural image size
+    const naturalX = cropArea.x * scaleX;
+    const naturalY = cropArea.y * scaleY;
+    const naturalWidth = cropArea.width * scaleX;
+    const naturalHeight = cropArea.height * scaleY;
+
+    // Set canvas size to crop area
+    canvas.width = naturalWidth;
+    canvas.height = naturalHeight;
+
+    // Draw cropped image
+    ctx.drawImage(
+      img,
+      naturalX,
+      naturalY,
+      naturalWidth,
+      naturalHeight,
+      0,
+      0,
+      naturalWidth,
+      naturalHeight
+    );
+
+    // Convert canvas to blob and upload
+    canvas.toBlob(async (blob) => {
+      if (!blob || !editingImageId) return;
+
+      try {
+        setIsUploading(true);
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", blob, imageToCrop.name);
+
+        const uploadResponse = await fetch("/api/uploads/hero-slider", {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: uploadFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          const error = await uploadResponse
+            .json()
+            .catch(() => ({ message: "Failed to upload image" }));
+          throw new Error(error.message || "Failed to upload image");
+        }
+
+        const { url } = await uploadResponse.json();
+
+        // Update existing slider image with new URL
+        const saveResponse = await fetch(`/api/admin/slider-images/${editingImageId}`, {
+          method: "PUT",
+          headers: {
+            ...getAuthHeaders(),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            image_url: url,
+          }),
+        });
+
+        if (!saveResponse.ok) {
+          const errorData = await saveResponse.json().catch(() => ({}));
+          console.error("Failed to update image in database:", errorData);
+          throw new Error("Failed to update image");
+        }
+
+        toast({
+          title: "Success",
+          description: "Image cropped and updated successfully.",
+        });
+
+        setIsCropDialogOpen(false);
+        setCropImage(null);
+        setImageToCrop(null);
+        setEditingImageId(null);
+        await fetchSliderImages();
+      } catch (error: any) {
+        toast({
+          title: "Edit Error",
+          description: error.message || "Failed to crop and update image. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsUploading(false);
+      }
+    }, imageToCrop.type, 0.9);
+  };
+
+  const handleImageLoad = () => {
+    if (!imageRef.current || !containerRef.current) return;
+    const img = imageRef.current;
+    const container = containerRef.current;
+    
+    // Get displayed image size
+    const displayedWidth = img.clientWidth;
+    const displayedHeight = img.clientHeight;
+    setImageSize({ width: displayedWidth, height: displayedHeight });
+    
+    // Initialize crop area to center 80% of image
+    const cropWidth = displayedWidth * 0.8;
+    const cropHeight = displayedHeight * 0.8;
+    setCropArea({
+      x: (displayedWidth - cropWidth) / 2,
+      y: (displayedHeight - cropHeight) / 2,
+      width: cropWidth,
+      height: cropHeight,
+    });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Check if click is within crop area
+    if (
+      x >= cropArea.x &&
+      x <= cropArea.x + cropArea.width &&
+      y >= cropArea.y &&
+      y <= cropArea.y + cropArea.height
+    ) {
+      setIsDragging(true);
+      setDragStart({ x: x - cropArea.x, y: y - cropArea.y });
     }
   };
 
-  const resetForm = () => {
-    setEditingImage(null);
-    setFormData({
-      image_url: "",
-      title: "",
-      description: "",
-      link_url: "",
-      display_order: 0,
-      is_active: true,
-    });
-    setImagePreview("");
-    setShowCrop(false);
-    setCropData({ x: 0, y: 0, width: 100, height: 100 });
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - dragStart.x;
+    const y = e.clientY - rect.top - dragStart.y;
+    
+    // Constrain crop area within image bounds
+    const maxX = imageSize.width - cropArea.width;
+    const maxY = imageSize.height - cropArea.height;
+    
+    setCropArea((prev) => ({
+      ...prev,
+      x: Math.max(0, Math.min(x, maxX)),
+      y: Math.max(0, Math.min(y, maxY)),
+    }));
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleDragStart = (e: any, id: string) => {
+    setDraggingId(id);
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = "move";
+    }
+  };
+
+  const handleDragOver = (e: any) => {
+    e.preventDefault();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = "move";
+    }
+  };
+
+  const handleDrop = async (e: any, targetId: string) => {
+    e.preventDefault();
+    if (!draggingId || draggingId === targetId) return;
+
+    const updated = [...sliderImages];
+    const fromIndex = updated.findIndex((img) => img.id === draggingId);
+    const toIndex = updated.findIndex((img) => img.id === targetId);
+
+    if (fromIndex === -1 || toIndex === -1) {
+      setDraggingId(null);
+      return;
+    }
+
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+
+    // Recalculate display_order locally
+    const reordered = updated.map((img, index) => ({
+      ...img,
+      display_order: index,
+    }));
+
+    setSliderImages(reordered);
+    setDraggingId(null);
+
+    // Persist new order to the database
+    try {
+      await Promise.all(
+        reordered.map((img) =>
+          fetch(`/api/admin/slider-images/${img.id}`, {
+            method: "PUT",
+            headers: {
+              ...getAuthHeaders(),
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ display_order: img.display_order }),
+          })
+        )
+      );
+      toast({
+        title: "Order updated",
+        description: "Slide order has been saved.",
+      });
+    } catch (error: any) {
+      console.error("Error saving new order:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save new slide order.",
+        variant: "destructive",
+      });
+      // Reload from server to avoid inconsistent state
+      fetchSliderImages();
+    }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-end mb-4">
+        <Button
+          onClick={() => {
+            fileInputRef.current?.click();
+          }}
+          disabled={isUploading}
+          className="!bg-blue-600 hover:!bg-blue-700 !text-white px-6 py-3 text-base font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          size="lg"
+        >
+          {isUploading ? (
+            <>
+              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+              Uploading...
+            </>
+          ) : (
+            <>
+              <Plus className="h-5 w-5 mr-2" />
+              Upload Hero Slide
+            </>
+          )}
+        </Button>
+
+        {/* Hidden file input for uploading images */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
+
+        {/* Hidden file input for editing/replacing existing images */}
+        <input
+          ref={editFileInputRef}
+          type="file"
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+          className="hidden"
+          onChange={handleEditFileSelect}
+        />
+      </div>
+
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Slider Images</h1>
-          <p className="text-gray-600 mt-2">Manage home page slider images</p>
+          <h1 className="text-3xl font-bold text-gray-900">Hero Slides</h1>
+          <p className="text-gray-600 mt-2">
+            Add and manage images used in the home page hero slider
+          </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button onClick={() => resetForm()}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Slider Image
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingImage ? "Edit Slider Image" : "Add New Slider Image"}
-              </DialogTitle>
-              <DialogDescription>
-                Upload and crop images for the home page slider
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Image Upload and Crop */}
-              <div className="space-y-4">
-                <Label>Image</Label>
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      ref={fileInputRef}
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full"
-                    >
-                      <ImageIcon className="h-4 w-4 mr-2" />
-                      Choose Image
-                    </Button>
-                  </div>
-                  <div className="flex-1">
-                    <Input
-                      type="url"
-                      placeholder="Or paste image URL"
-                      value={formData.image_url}
-                      onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                {/* Image Preview with Crop */}
-                {(imagePreview || formData.image_url) && (
-                  <div className="space-y-4">
-                    <div className="relative border rounded-lg overflow-hidden bg-gray-100" style={{ height: "400px" }}>
-                      <img
-                        src={imagePreview || formData.image_url}
-                        alt="Preview"
-                        className="w-full h-full object-contain"
-                        ref={imageRef}
-                        onLoad={() => {
-                          if (imageRef.current) {
-                            const rect = imageRef.current.getBoundingClientRect();
-                            setCropData({
-                              x: 0,
-                              y: 0,
-                              width: rect.width,
-                              height: rect.height,
-                            });
-                          }
-                        }}
-                      />
-                      {showCrop && imageRef.current && (
-                        <>
-                          {/* Crop Overlay */}
-                          <div
-                            className="absolute border-2 border-blue-500 bg-blue-500/20 cursor-move"
-                            style={{
-                              left: `${cropData.x}px`,
-                              top: `${cropData.y}px`,
-                              width: `${cropData.width}px`,
-                              height: `${cropData.height}px`,
-                            }}
-                            ref={cropBoxRef}
-                            onMouseDown={(e) => {
-                              setIsDragging(true);
-                              setDragStart({ x: e.clientX - cropData.x, y: e.clientY - cropData.y });
-                            }}
-                          >
-                            <div className="absolute -top-1 -left-1 w-3 h-3 bg-blue-500 border-2 border-white rounded cursor-nwse-resize"
-                              onMouseDown={(e) => {
-                                e.stopPropagation();
-                                // Handle resize from top-left
-                              }}
-                            />
-                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 border-2 border-white rounded cursor-nesw-resize" />
-                            <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-blue-500 border-2 border-white rounded cursor-nesw-resize" />
-                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-500 border-2 border-white rounded cursor-nwse-resize" />
-                          </div>
-                          {/* Dark overlay outside crop area */}
-                          <div
-                            className="absolute inset-0 pointer-events-none"
-                            style={{
-                              background: `linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.5) ${(cropData.x / (imageRef.current?.offsetWidth || 1)) * 100}%, transparent ${(cropData.x / (imageRef.current?.offsetWidth || 1)) * 100}%, transparent ${((cropData.x + cropData.width) / (imageRef.current?.offsetWidth || 1)) * 100}%, rgba(0,0,0,0.5) ${((cropData.x + cropData.width) / (imageRef.current?.offsetWidth || 1)) * 100}%)`,
-                            }}
-                          />
-                        </>
-                      )}
-                    </div>
-                    {showCrop && (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label>X Position</Label>
-                            <Input
-                              type="number"
-                              value={Math.round(cropData.x)}
-                              onChange={(e) => setCropData({ ...cropData, x: parseInt(e.target.value) || 0 })}
-                            />
-                          </div>
-                          <div>
-                            <Label>Y Position</Label>
-                            <Input
-                              type="number"
-                              value={Math.round(cropData.y)}
-                              onChange={(e) => setCropData({ ...cropData, y: parseInt(e.target.value) || 0 })}
-                            />
-                          </div>
-                          <div>
-                            <Label>Width</Label>
-                            <Input
-                              type="number"
-                              value={Math.round(cropData.width)}
-                              onChange={(e) => setCropData({ ...cropData, width: parseInt(e.target.value) || 100 })}
-                            />
-                          </div>
-                          <div>
-                            <Label>Height</Label>
-                            <Input
-                              type="number"
-                              value={Math.round(cropData.height)}
-                              onChange={(e) => setCropData({ ...cropData, height: parseInt(e.target.value) || 100 })}
-                            />
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button type="button" onClick={handleCrop} className="flex-1">
-                            Apply Crop
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                              setShowCrop(false);
-                              setImagePreview(formData.image_url);
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                        <canvas ref={canvasRef} className="hidden" />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title (Optional)</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Image title"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="link_url">Link URL (Optional)</Label>
-                  <Input
-                    id="link_url"
-                    type="url"
-                    value={formData.link_url}
-                    onChange={(e) => setFormData({ ...formData, link_url: e.target.value })}
-                    placeholder="https://example.com"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description (Optional)</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                  placeholder="Image description"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="display_order">Display Order</Label>
-                  <Input
-                    id="display_order"
-                    type="number"
-                    value={formData.display_order}
-                    onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-                <div className="flex items-center space-x-2 pt-8">
-                  <input
-                    type="checkbox"
-                    id="is_active"
-                    checked={formData.is_active}
-                    onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="rounded"
-                  />
-                  <Label htmlFor="is_active">Active</Label>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setIsDialogOpen(false);
-                    resetForm();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">Save Slider Image</Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>All Slider Images</CardTitle>
-          <CardDescription>Manage images displayed in the home page slider</CardDescription>
+          <CardDescription>
+            Manage images displayed in the home page hero slider
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {loading && (
             <p className="text-center text-gray-500 py-8">Loading...</p>
-          ) : sliderImages.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">No slider images found</p>
-          ) : (
-            <div className="space-y-4">
-              {sliderImages.map((image, index) => (
+          )}
+          {!loading && sliderImages.length === 0 && (
+            <p className="text-center text-gray-500 py-8">
+              No hero slides found
+            </p>
+          )}
+          {!loading && sliderImages.length > 0 && (
+            <div className="relative">
+              {isUploading && (
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    <p className="text-sm font-medium text-gray-700">Uploading image...</p>
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sliderImages.map((image) => (
                 <div
                   key={image.id}
-                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border"
+                  className="relative bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-move"
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, image.id)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, image.id)}
                 >
-                  <div className="w-32 h-20 flex-shrink-0">
+                  <div className="aspect-video bg-gray-100 relative">
                     <img
                       src={image.image_url}
-                      alt={image.title || "Slider image"}
-                      className="w-full h-full object-cover rounded"
+                      alt={image.title || "Hero slide"}
+                      className="w-full h-full object-cover"
                     />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">
-                      {image.title || "Untitled Image"}
-                    </h3>
-                    {image.description && (
-                      <p className="text-sm text-gray-600 line-clamp-1">{image.description}</p>
-                    )}
-                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                      <span>Order: {image.display_order}</span>
-                      <span className={image.is_active ? "text-green-600" : "text-gray-400"}>
-                        {image.is_active ? "Active" : "Inactive"}
-                      </span>
+                    <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          setEditingImageId(image.id);
+                          editFileInputRef.current?.click();
+                        }}
+                        className="bg-white hover:bg-gray-100 shadow-md"
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDelete(image.id, image.image_url)}
+                        className="bg-red-600 hover:bg-red-700 shadow-md"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleMoveOrder(image.id, "up")}
-                      disabled={index === 0}
-                    >
-                      <ArrowUp className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleMoveOrder(image.id, "down")}
-                      disabled={index === sliderImages.length - 1}
-                    >
-                      <ArrowDown className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(image)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDelete(image.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Crop Dialog */}
+      <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Crop Image</DialogTitle>
+            <DialogDescription>
+              Select the area you want to crop. Drag to adjust the selection.
+            </DialogDescription>
+          </DialogHeader>
+          {cropImage && (
+            <div className="space-y-4">
+              <div 
+                ref={containerRef}
+                className="relative border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-gray-50 cursor-move"
+                style={{ maxHeight: "60vh" }}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+              >
+                <div className="relative" style={{ width: "100%", height: "auto", maxHeight: "60vh", overflow: "auto" }}>
+                  <img
+                    ref={imageRef}
+                    src={cropImage}
+                    alt="Crop preview"
+                    onLoad={handleImageLoad}
+                    className="max-w-full h-auto select-none"
+                    style={{ display: "block", pointerEvents: "none" }}
+                    draggable={false}
+                  />
+                  {/* Crop overlay with draggable selection */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {/* Dark overlay outside crop area */}
+                    <div
+                      className="absolute bg-black/50"
+                      style={{
+                        left: 0,
+                        top: 0,
+                        width: `${cropArea.x}px`,
+                        height: "100%",
+                      }}
+                    />
+                    <div
+                      className="absolute bg-black/50"
+                      style={{
+                        left: `${cropArea.x}px`,
+                        top: 0,
+                        width: `${cropArea.width}px`,
+                        height: `${cropArea.y}px`,
+                      }}
+                    />
+                    <div
+                      className="absolute bg-black/50"
+                      style={{
+                        left: `${cropArea.x + cropArea.width}px`,
+                        top: 0,
+                        width: `${imageSize.width - cropArea.x - cropArea.width}px`,
+                        height: "100%",
+                      }}
+                    />
+                    <div
+                      className="absolute bg-black/50"
+                      style={{
+                        left: `${cropArea.x}px`,
+                        top: `${cropArea.y + cropArea.height}px`,
+                        width: `${cropArea.width}px`,
+                        height: `${imageSize.height - cropArea.y - cropArea.height}px`,
+                      }}
+                    />
+                    {/* Crop selection border */}
+                    <div
+                      className="absolute border-4 border-blue-500 bg-transparent"
+                      style={{
+                        left: `${cropArea.x}px`,
+                        top: `${cropArea.y}px`,
+                        width: `${cropArea.width}px`,
+                        height: `${cropArea.height}px`,
+                        pointerEvents: "none",
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 text-center">
+                Click and drag the highlighted area to adjust the crop selection
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsCropDialogOpen(false);
+                    setCropImage(null);
+                    setImageToCrop(null);
+                    setEditingImageId(null);
+                    if (editFileInputRef.current) {
+                      editFileInputRef.current.value = "";
+                    }
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleCrop} disabled={isUploading}>
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    "Apply Crop & Upload"
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+          <canvas ref={canvasRef} className="hidden" />
+        </DialogContent>
+      </Dialog>
+
+      {/* Hidden file input for editing images */}
+      <input
+        ref={editFileInputRef}
+        type="file"
+        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+        className="hidden"
+        onChange={handleEditFileSelect}
+      />
     </div>
   );
 }
-
