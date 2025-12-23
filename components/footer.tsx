@@ -32,7 +32,7 @@ export function Footer() {
       <div className="container mx-auto text-center text-base text-gray-600">
         <p>
           © {new Date().getFullYear()} FastLink Pte Limited. All rights reserved.{" "}
-          Developed and hosted by{" "}
+          Powered by{" "}
           <a
             href="https://www.reactmedia.com.fj/fastlink"
             target="_blank"

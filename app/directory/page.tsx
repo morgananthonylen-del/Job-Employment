@@ -12,6 +12,14 @@ interface Business {
   company_logo_url?: string;
 }
 
+interface SliderImage {
+  id: string;
+  image_url: string;
+  title?: string;
+  description?: string;
+  link_url?: string;
+}
+
 export default function DirectoryPage() {
   const [businessSearchQuery, setBusinessSearchQuery] = useState("");
   const [businessPlaceholder, setBusinessPlaceholder] = useState("Search for a business...");
@@ -23,6 +31,8 @@ export default function DirectoryPage() {
   const [showAutocomplete, setShowAutocomplete] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const searchInputRef = useRef<HTMLDivElement>(null);
+  const [sliderImages, setSliderImages] = useState<SliderImage[]>([]);
+  const [currentSliderIndex, setCurrentSliderIndex] = useState(0);
 
   // Typing effect for business search placeholder
   useEffect(() => {
@@ -176,24 +186,133 @@ export default function DirectoryPage() {
     }
   }, [showAutocomplete]);
 
+  // Fetch slider images for directory page
+  useEffect(() => {
+    const fetchSliderImages = async () => {
+      try {
+        console.log("Directory: Fetching slider images for page=directory");
+        const response = await fetch("/api/slider-images?page=directory&t=" + Date.now(), {
+          cache: "no-store", // Don't cache to see fresh data
+        });
+        
+        console.log("Directory: Response status:", response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Directory: Received images:", data?.length || 0, data);
+          const images = data || [];
+          setSliderImages(images);
+          if (images.length > 0) {
+            setCurrentSliderIndex(0);
+            console.log("Directory: Set slider images, first image:", images[0]);
+          } else {
+            console.warn("Directory: No slider images found for page=directory");
+          }
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Directory: Failed to fetch slider images:", errorData);
+        }
+      } catch (error) {
+        console.error("Directory: Error fetching slider images:", error);
+      }
+    };
+
+    fetchSliderImages();
+  }, []);
+
+  // Auto-rotate slider
+  useEffect(() => {
+    if (sliderImages.length <= 1) return;
+    
+    const timer = setInterval(() => {
+      setCurrentSliderIndex((prev) => (prev + 1) % sliderImages.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [sliderImages.length]);
+
   return (
     <div className="min-h-screen bg-black">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Building2 className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-white">Business Directory</h1>
+      {/* Hero Section with Slider Background */}
+      <section className="relative h-[400px] md:h-[500px] overflow-hidden mb-8" style={{ 
+        backgroundColor: sliderImages.length === 0 ? "#1f2937" : "transparent"
+      }}>
+        {/* Slider Images - Background */}
+        {sliderImages.length > 0 ? (
+          sliderImages.map((image, index) => {
+            const isActive = index === currentSliderIndex;
+            console.log(`Directory: Rendering image ${index}, active: ${isActive}, URL: ${image.image_url}`);
+            return (
+              <img
+                key={image.id || `img-${index}`}
+                src={image.image_url}
+                alt={image.title || "Directory background"}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  opacity: isActive ? 1 : 0,
+                  transition: "opacity 1s ease-in-out",
+                  zIndex: isActive ? 1 : 0,
+                  pointerEvents: "none",
+                }}
+                onError={(e) => {
+                  console.error("Directory: Slider image failed to load:", image.image_url);
+                }}
+                onLoad={() => {
+                  console.log("Directory: Image loaded successfully:", image.image_url);
+                }}
+              />
+            );
+          })
+        ) : (
+          <div className="absolute inset-0 bg-gray-200" style={{ zIndex: 1 }}>
+            <div className="flex items-center justify-center h-full text-gray-500">
+              No slider images for directory page
+            </div>
           </div>
-          <p className="text-lg text-gray-400 mb-6">
-            Search for businesses and view their contact information
-          </p>
+        )}
+
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-black/40" style={{ zIndex: 2 }} />
+
+        {/* Slider navigation dots */}
+        {sliderImages.length > 1 && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2" style={{ zIndex: 30 }}>
+            {sliderImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSliderIndex(index)}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === currentSliderIndex ? "bg-white w-8" : "bg-white/50 w-2 hover:bg-white/75"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Content Overlay */}
+        <div className="relative h-full flex items-center z-10" style={{ zIndex: 10 }}>
+          <div className="max-w-7xl mx-auto w-full px-4 md:px-8">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <Building2 className="h-8 w-8 text-white" />
+                <h1 className="text-3xl font-bold text-white">Business Directory</h1>
+              </div>
+              <p className="text-[18px] leading-[24px] text-white/90 mb-6">
+                Search for businesses and view their contact information
+              </p>
 
           {/* Google-style Search Bar with Autocomplete */}
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-5xl mx-auto px-4">
             <div className="relative" ref={searchInputRef}>
-              <div className="relative bg-white rounded-full shadow-md hover:shadow-lg transition-shadow border border-gray-200 focus-within:shadow-lg focus-within:border-blue-500 overflow-hidden">
-                <div className="flex items-center min-h-[56px]">
-                  <div className="pl-5 pr-3 flex-shrink-0">
+              <div className="relative bg-white rounded-full shadow-lg hover:shadow-xl transition-shadow border-2 border-gray-200 focus-within:border-blue-500 overflow-hidden">
+                <div className="flex items-center min-h-[64px]">
+                  <div className="pl-6 pr-4 flex-shrink-0">
                     <Search className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
@@ -212,7 +331,8 @@ export default function DirectoryPage() {
                         setShowAutocomplete(true);
                       }
                     }}
-                    className="flex-1 py-4 pr-3 text-base text-gray-900 placeholder:text-gray-400 bg-transparent border-0 outline-none focus:outline-none min-w-0"
+                    className="flex-1 pr-4 text-[18px] leading-[24px] font-[280] text-gray-900 placeholder:text-gray-400 bg-transparent border-0 outline-none focus:outline-none min-w-0"
+                    style={{ fontFamily: "Macan, system-ui, sans-serif", paddingTop: 12, paddingBottom: 12 }}
                   />
                 </div>
               </div>
@@ -258,8 +378,12 @@ export default function DirectoryPage() {
               )}
             </div>
           </div>
+            </div>
+          </div>
         </div>
+      </section>
 
+      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Business Results */}
         {hasSearched && (
           <div className="mt-8">

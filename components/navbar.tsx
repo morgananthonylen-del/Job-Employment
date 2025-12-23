@@ -51,10 +51,10 @@ export function Navbar() {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center justify-between flex-1 ml-8">
             {/* Left side options */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 text-[16px] leading-[24px]">
               <Link
                 href="/jobs"
-                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                className={`relative flex items-center gap-2 px-4 py-2 font-medium transition-colors ${
                   isJobs ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
                 }`}
               >
@@ -66,7 +66,7 @@ export function Navbar() {
               </Link>
               <Link
                 href="/directory"
-                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                className={`relative flex items-center gap-2 px-4 py-2 font-medium transition-colors ${
                   isDirectory ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
                 }`}
               >
@@ -78,7 +78,7 @@ export function Navbar() {
               </Link>
               <Link
                 href="/market-place"
-                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                className={`relative flex items-center gap-2 px-4 py-2 font-medium transition-colors ${
                   isMarketPlace ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
                 }`}
               >
@@ -90,7 +90,7 @@ export function Navbar() {
               </Link>
               <Link
                 href="/shoutouts"
-                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                className={`relative flex items-center gap-2 px-4 py-2 font-medium transition-colors ${
                   isShoutouts ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
                 }`}
               >
@@ -102,7 +102,7 @@ export function Navbar() {
               </Link>
               <Link
                 href="/quote"
-                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                className={`relative flex items-center gap-2 px-4 py-2 font-medium transition-colors ${
                   isQuote ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
                 }`}
               >
@@ -111,7 +111,7 @@ export function Navbar() {
               </Link>
               <Link
                 href="/get-listed"
-                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                className={`relative flex items-center gap-2 px-4 py-2 font-medium transition-colors ${
                   isGetListed ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
                 }`}
               >
@@ -121,18 +121,23 @@ export function Navbar() {
             </div>
 
             {/* Right side links */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 text-[16px] leading-[24px]">
+              {/* Sign in - simple text link */}
               <Link
                 href="/login"
-                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                className={`font-medium transition-colors ${
                   isLogin ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                <UserCircle className="h-5 w-5" />
-                Login
-                {isLogin && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
-                )}
+                Sign In
+              </Link>
+
+              {/* Join - boxed button */}
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center px-6 py-2.5 rounded-md border font-medium whitespace-nowrap bg-white border-blue-600 text-blue-700 hover:bg-blue-50 transition-colors"
+              >
+                Join
               </Link>
             </div>
           </div>
@@ -232,15 +237,24 @@ export function Navbar() {
               <Building2 className="h-4 w-4" />
               Get Listed
             </Link>
+            {/* Sign in - simple row link */}
             <Link
               href="/login"
               onClick={() => setMobileOpen(false)}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${
                 isLogin ? "bg-blue-50 text-blue-700" : "text-gray-700 hover:bg-gray-50"
               }`}
             >
-              <UserCircle className="h-5 w-5" />
-              Login
+              Sign In
+            </Link>
+
+            {/* Join - boxed button */}
+            <Link
+              href="/login"
+              onClick={() => setMobileOpen(false)}
+              className="w-full inline-flex items-center justify-center px-6 py-2.5 rounded-md border text-sm font-medium whitespace-nowrap bg-white border-blue-600 text-blue-700 hover:bg-blue-50 transition-colors"
+            >
+              Join
             </Link>
           </div>
         </div>

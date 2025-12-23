@@ -75,9 +75,8 @@ export default function HomePage() {
         img.onload = () => {
           setImagesLoaded((prev) => new Set(prev).add(image.image_url));
         };
-        img.onerror = () => {
-          console.error("Failed to preload image:", image.image_url);
-        };
+        // If a URL is broken or blocked, just skip it silently
+        img.onerror = () => {};
         img.src = image.image_url;
       });
     };
@@ -206,7 +205,7 @@ export default function HomePage() {
     } else {
         const errorData = await response.json().catch(() => ({}));
         console.error("Failed to fetch slider images:", errorData);
-      }
+    }
     } catch (error) {
       console.error("Error fetching slider images:", error);
     }
@@ -396,7 +395,7 @@ export default function HomePage() {
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
                   Find work. Find businesses.
                 </h1>
-                <p className="text-base md:text-lg text-gray-700 mb-6 max-w-xl">
+                <p className="text-[18px] leading-[24px] text-gray-700 mb-6 max-w-xl">
                   FastLink connects everyday people with local businesses and real job opportunities
                   across Fiji. Start with a quick search or browse what's featured today.
                 </p>
@@ -407,17 +406,17 @@ export default function HomePage() {
                   >
                     <Briefcase className="h-4 w-4 mr-2" />
                     Job Search
-                  </Link>
+            </Link>
                   <Link
                     href="/directory"
                     className="inline-flex items-center justify-center rounded-full border border-blue-600 text-blue-700 hover:bg-blue-50 px-6 py-3 text-sm font-medium transition"
                   >
                     <Building2 className="h-4 w-4 mr-2" />
                     Business Directory
-                  </Link>
-                </div>
-              </div>
-            </div>
+              </Link>
+          </div>
+        </div>
+      </div>
 
             {/* Hero Slider - Right Side, Same Height, Touching */}
             <div className="relative overflow-hidden bg-gray-200 h-full shadow-2xl" style={{ marginLeft: 0 }}>
@@ -426,7 +425,7 @@ export default function HomePage() {
                   {sliderImages.map((image, index) => {
                     const isActive = index === currentSliderIndex;
                     return (
-                      <div
+            <div
                         key={image.id || `img-${index}`}
                         className="absolute inset-0"
                         style={{
@@ -440,7 +439,10 @@ export default function HomePage() {
                           alt={image.title || "Hero slide"}
                           className="w-full h-full object-cover"
                           onError={() => {
-                            console.error("Hero slider image failed to load:", image.image_url);
+                            // If an image fails to load (e.g. deleted from storage), remove it from the slider list
+                            setSliderImages((prev) =>
+                              prev.filter((img) => img.id !== image.id)
+                            );
                           }}
                         />
                       </div>
@@ -450,16 +452,16 @@ export default function HomePage() {
                   {sliderImages.length > 1 && (
                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-30">
                       {sliderImages.map((_, index) => (
-                        <button
-                          key={index}
+              <button
+                key={index}
                           onClick={() => setCurrentSliderIndex(index)}
                           className={`h-2 rounded-full transition-all duration-300 ${
                             index === currentSliderIndex ? "bg-white w-8" : "bg-white/50 w-2 hover:bg-white/75"
                           }`}
-                          aria-label={`Go to slide ${index + 1}`}
-                        />
-                      ))}
-                    </div>
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
                   )}
                 </>
               ) : (
@@ -467,20 +469,91 @@ export default function HomePage() {
               )}
             </div>
           </div>
-        </div>
+                          </div>
       </section>
 
 
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-white">
 
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Featured Jobs */}
+          {/* Featured Businesses Section - directly after hero */}
+          {featuredBusinesses.length > 0 && (
+            <div className="mb-12">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2
+                    className="text-[48px] leading-[50px] font-bold"
+                    style={{ color: "#404145" }}
+                  >
+                    Featured Businesses
+                  </h2>
+                  <p
+                    className="text-[18px] leading-[24px]"
+                    style={{ color: "#404145" }}
+                  >
+                    Discover businesses showcasing themselves on FastLink
+                  </p>
+                </div>
+                <Link
+                  href="/directory"
+                  className="text-sm font-medium text-blue-400 hover:text-blue-300 underline underline-offset-4"
+                >
+                  View business directory
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {featuredBusinesses.map((business) => (
+                  <Link
+                    key={business.id}
+                    href={`/${business.slug}`}
+                    className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-4 border border-gray-100 hover:border-blue-300"
+                  >
+                    <div className="flex flex-col items-center text-center">
+                      {business.company_logo_url ? (
+                        <div className="w-20 h-20 mb-3 flex items-center justify-center">
+                          <img
+                            src={business.company_logo_url}
+                            alt={business.company_name}
+                            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 mb-3 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Building2 className="h-10 w-10 text-gray-400" />
+                        </div>
+                      )}
+                      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                        {business.company_name}
+                      </h3>
+                      {business.company_description && (
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                          {business.company_description}
+                        </p>
+            )}
+          </div>
+                </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Recent Job Posts */}
           {featuredJobs.length > 0 && (
             <div className="mb-12">
               <div className="flex items-center justify-between mb-4 max-w-4xl mx-auto">
-                              <div>
-                  <h2 className="text-2xl font-bold text-white">Featured Jobs</h2>
-                  <p className="text-gray-400 text-sm">Hand-picked opportunities from businesses on FastLink</p>
+                <div>
+                  <h2
+                    className="text-[48px] leading-[50px] font-bold"
+                    style={{ color: "#404145" }}
+                  >
+                    Recent Job Posts
+                  </h2>
+                  <p
+                    className="text-[18px] leading-[24px]"
+                    style={{ color: "#404145" }}
+                  >
+                    Hand-picked opportunities from businesses on FastLink
+                  </p>
                 </div>
                 <Link
                   href="/jobs"
@@ -537,61 +610,10 @@ export default function HomePage() {
                             )}
                           </div>
                         </div>
-                          </div>
+                      </div>
                     </Link>
                   ))}
-                              </div>
-                            </div>
-                          </div>
-          )}
-
-          {/* Featured Businesses Section */}
-          {featuredBusinesses.length > 0 && (
-            <div className="mb-12">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Featured Businesses</h2>
-                  <p className="text-gray-400 text-sm">Discover businesses showcasing themselves on FastLink</p>
-                                </div>
-                <Link
-                  href="/directory"
-                  className="text-sm font-medium text-blue-400 hover:text-blue-300 underline underline-offset-4"
-                >
-                  View business directory
-                </Link>
-                              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {featuredBusinesses.map((business) => (
-                  <Link
-                    key={business.id}
-                    href={`/${business.slug}`}
-                    className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-4 border border-gray-100 hover:border-blue-300"
-                  >
-                    <div className="flex flex-col items-center text-center">
-                      {business.company_logo_url ? (
-                        <div className="w-20 h-20 mb-3 flex items-center justify-center">
-                          <img
-                            src={business.company_logo_url}
-                            alt={business.company_name}
-                            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-200"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-20 h-20 mb-3 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <Building2 className="h-10 w-10 text-gray-400" />
-                        </div>
-                      )}
-                      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
-                        {business.company_name}
-                      </h3>
-                      {business.company_description && (
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                          {business.company_description}
-                        </p>
-            )}
-          </div>
-                </Link>
-                ))}
+                </div>
               </div>
             </div>
           )}

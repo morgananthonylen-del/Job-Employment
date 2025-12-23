@@ -53,7 +53,7 @@ async function syncImagesFromBucket() {
         continue;
       }
 
-      // Insert into database
+      // Insert into database (default to 'home' for synced images)
       const { error: insertError } = await supabaseAdmin
         .from("slider_images")
         .insert({
@@ -63,6 +63,7 @@ async function syncImagesFromBucket() {
           link_url: null,
           display_order: 0,
           is_active: true,
+          page_name: "home",
         });
 
       if (insertError) {
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
       await syncImagesFromBucket();
     }
 
-    console.log("Fetching slider images from database...");
+    console.log("Fetching all slider images from database (no page filter)...");
     
     const { data, error } = await supabaseAdmin
       .from("slider_images")
@@ -136,6 +137,7 @@ export async function POST(request: NextRequest) {
       link_url,
       display_order = 0,
       is_active = true,
+      page_name = "home",
     } = body;
 
     if (!image_url) {
@@ -146,26 +148,50 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("Inserting slider image into database...");
+    console.log(`Inserting slider image into database with page_name: ${page_name || "home"}...`);
+    const insertData = {
+      image_url,
+      title: title || null,
+      description: description || null,
+      link_url: link_url || null,
+      display_order,
+      is_active,
+      page_name: page_name || "home",
+    };
+    console.log("Insert data:", insertData);
+    
     const { data, error } = await supabaseAdmin
       .from("slider_images")
-      .insert({
-        image_url,
-        title: title || null,
-        description: description || null,
-        link_url: link_url || null,
-        display_order,
-        is_active,
-      })
+      .insert(insertData)
       .select()
       .single();
 
     if (error) {
       console.error("Database insert error:", error);
+      // If page_name column doesn't exist, try without it
+      if (error.message?.includes("page_name") || error.code === "42703") {
+        console.warn("page_name column doesn't exist, inserting without it");
+        const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+          .from("slider_images")
+          .insert({
+            image_url,
+            title: title || null,
+            description: description || null,
+            link_url: link_url || null,
+            display_order,
+            is_active,
+          })
+          .select()
+          .single();
+        
+        if (fallbackError) throw fallbackError;
+        console.log("Successfully created slider image (without page_name):", fallbackData);
+        return NextResponse.json(fallbackData, { status: 201 });
+      }
       throw error;
     }
 
-    console.log("Successfully created slider image:", data);
+    console.log("Successfully created slider image with page_name:", data);
     return NextResponse.json(data, { status: 201 });
   } catch (error: any) {
     console.error("Error creating slider image:", error);

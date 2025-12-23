@@ -85,29 +85,30 @@ export default function JobsPage() {
             <Briefcase className="h-8 w-8 text-blue-600" />
             <h1 className="text-3xl font-bold text-white">Job Search</h1>
           </div>
-          <p className="text-lg text-gray-400 mb-6">
+          <p className="text-[18px] leading-[24px] text-gray-400 mb-6">
             Find your next opportunity
           </p>
 
-          {/* Google-style Search Bar */}
-          <div className="max-w-2xl mx-auto">
-            <div className="relative">
-              <div className="relative bg-white rounded-full shadow-md hover:shadow-lg transition-shadow border border-gray-200 focus-within:shadow-lg focus-within:border-blue-500 overflow-hidden">
-                <div className="flex items-center min-h-[56px]">
-                  <div className="pl-5 pr-3 flex-shrink-0">
-                    <Search className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Search for jobs..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1 py-4 pr-3 text-base text-gray-900 placeholder:text-gray-400 bg-transparent border-0 outline-none focus:outline-none min-w-0"
-                  />
+        {/* Google-style Search Bar */}
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="relative">
+            <div className="relative bg-white rounded-full shadow-lg hover:shadow-xl transition-shadow border-2 border-gray-200 focus-within:border-blue-500 overflow-hidden">
+              <div className="flex items-center min-h-[64px]">
+                <div className="pl-6 pr-4 flex-shrink-0">
+                  <Search className="h-5 w-5 text-gray-400" />
                 </div>
+                <input
+                  type="text"
+                  placeholder="Search for jobs..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1 pr-4 text-[18px] leading-[24px] font-[280] text-gray-900 placeholder:text-gray-400 bg-transparent border-0 outline-none focus:outline-none min-w-0"
+                  style={{ fontFamily: "Macan, system-ui, sans-serif", paddingTop: 12, paddingBottom: 12 }}
+                />
               </div>
             </div>
           </div>
+        </div>
         </div>
 
         <div className="mt-8">

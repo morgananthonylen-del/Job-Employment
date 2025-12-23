@@ -27,12 +27,20 @@ interface SliderImage {
   link_url?: string;
   display_order: number;
   is_active: boolean;
+  page_name?: string;
   created_at: string;
   updated_at: string;
 }
 
+const PAGE_OPTIONS = [
+  { value: "home", label: "Home Page" },
+  { value: "directory", label: "Business Directory" },
+  { value: "marketplace", label: "Market Place" },
+];
+
 export default function AdminSliderImagesPage() {
   const { toast } = useToast();
+  const [selectedPage, setSelectedPage] = useState<string>("home");
   const [sliderImages, setSliderImages] = useState<SliderImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -54,7 +62,7 @@ export default function AdminSliderImagesPage() {
   useEffect(() => {
     // Sync from bucket on initial load to catch any images that were uploaded but not saved
     fetchSliderImages(true);
-  }, []);
+  }, [selectedPage]);
 
   // Helper function to get auth headers
   const getAuthHeaders = (): HeadersInit => {
@@ -78,8 +86,8 @@ export default function AdminSliderImagesPage() {
     try {
       setLoading(true);
       const url = syncFromBucket 
-        ? "/api/admin/slider-images?sync=true"
-        : "/api/admin/slider-images";
+        ? `/api/admin/slider-images?sync=true`
+        : `/api/admin/slider-images`;
       const response = await fetch(url, {
         headers: getAuthHeaders(),
       });
@@ -180,6 +188,7 @@ export default function AdminSliderImagesPage() {
             link_url: null,
             display_order: 0,
             is_active: true,
+            page_name: selectedPage,
           }),
         });
 
@@ -264,8 +273,16 @@ export default function AdminSliderImagesPage() {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: "Failed to delete slider image" }));
-        throw new Error(error.error || "Failed to delete slider image");
+        let message = "Failed to delete slider image";
+        try {
+          const errorData = await response.json();
+          if (errorData && typeof errorData === "object" && errorData.error) {
+            message = errorData.error;
+          }
+        } catch (parseError) {
+          console.error("Failed to parse delete error response", parseError);
+        }
+        throw new Error(message);
       }
 
       toast({
@@ -596,8 +613,32 @@ export default function AdminSliderImagesPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Hero Slides</h1>
           <p className="text-gray-600 mt-2">
-            Add and manage images used in the home page hero slider
+            Add and manage slider images for different pages
           </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <label htmlFor="page-select" className="text-sm font-medium text-gray-700">
+            Page:
+          </label>
+          <select
+            id="page-select"
+            value={selectedPage}
+            onChange={(e) => setSelectedPage(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            {PAGE_OPTIONS.map((page) => (
+              <option key={page.value} value={page.value}>
+                {page.label}
+              </option>
+            ))}
+          </select>
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Slide
+          </Button>
         </div>
       </div>
 
@@ -629,21 +670,22 @@ export default function AdminSliderImagesPage() {
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {sliderImages.map((image) => (
-                <div
-                  key={image.id}
-                  className="relative bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-move"
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, image.id)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, image.id)}
-                >
-                  <div className="aspect-video bg-gray-100 relative">
-                    <img
-                      src={image.image_url}
-                      alt={image.title || "Hero slide"}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                  <div
+                    key={image.id}
+                    className="relative bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-move"
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, image.id)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, image.id)}
+                  >
+                    <div className="aspect-video bg-gray-100">
+                      <img
+                        src={image.image_url}
+                        alt={image.title || "Hero slide"}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between px-3 py-2 border-t bg-white">
                       <Button
                         size="sm"
                         variant="secondary"
@@ -651,7 +693,7 @@ export default function AdminSliderImagesPage() {
                           setEditingImageId(image.id);
                           editFileInputRef.current?.click();
                         }}
-                        className="bg-white hover:bg-gray-100 shadow-md"
+                        className="bg-white hover:bg-gray-100 shadow-sm"
                       >
                         <Edit className="h-4 w-4 mr-1" />
                         Edit
@@ -660,15 +702,14 @@ export default function AdminSliderImagesPage() {
                         size="sm"
                         variant="destructive"
                         onClick={() => handleDelete(image.id, image.image_url)}
-                        className="bg-red-600 hover:bg-red-700 shadow-md"
+                        className="bg-red-600 hover:bg-red-700 text-white shadow-sm"
                       >
                         <Trash2 className="h-4 w-4 mr-1" />
                         Delete
                       </Button>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
               </div>
             </div>
           )}
