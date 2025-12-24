@@ -528,13 +528,13 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => {
-                  const term = "surveyors";
+                  const term = "surveyor";
                   setSearchQuery(term);
                   handleCombinedSearch();
                 }}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-white text-white hover:bg-white/10 transition-colors"
               >
-                Surveyors →
+                Surveyor →
               </button>
               <button
                 type="button"
@@ -550,13 +550,13 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => {
-                  const term = "architects";
+                  const term = "architect";
                   setSearchQuery(term);
                   handleCombinedSearch();
                 }}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-white text-white hover:bg-white/10 transition-colors"
               >
-                Architects →
+                Architect →
               </button>
               <button
                 type="button"
@@ -605,13 +605,13 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => {
-                  const term = "car rentals";
+                  const term = "car rental";
                   setSearchQuery(term);
                   handleCombinedSearch();
                 }}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-white text-white hover:bg-white/10 transition-colors"
               >
-                Car Rentals →
+                Car Rental →
               </button>
               <button
                 type="button"
