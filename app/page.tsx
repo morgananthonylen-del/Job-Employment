@@ -484,7 +484,7 @@ export default function HomePage() {
             FastLink connects everyday people with local businesses and real job opportunities across Fiji.
             Start with a quick search or browse what's featured today.
           </p>
-          <div className="mt-6 w-full max-w-2xl" ref={heroSearchRef} style={{ background: "transparent" }}>
+          <div className="mt-6 w-full max-w-2xl md:max-w-[70vw]" ref={heroSearchRef} style={{ background: "transparent" }}>
             <input
               type="text"
               placeholder="Search for jobs or businesses..."
@@ -522,6 +522,109 @@ export default function HomePage() {
                 ))}
               </div>
             )}
+          </div>
+          <div className="mt-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <button
+                type="button"
+                onClick={() => {
+                  const term = "surveyors";
+                  setSearchQuery(term);
+                  handleCombinedSearch();
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-white text-white hover:bg-white/10 transition-colors"
+              >
+                Surveyors →
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const term = "construction";
+                  setSearchQuery(term);
+                  handleCombinedSearch();
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-white text-white hover:bg-white/10 transition-colors"
+              >
+                Construction →
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const term = "architects";
+                  setSearchQuery(term);
+                  handleCombinedSearch();
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-white text-white hover:bg-white/10 transition-colors"
+              >
+                Architects →
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const term = "web development";
+                  setSearchQuery(term);
+                  handleCombinedSearch();
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-white text-white hover:bg-white/10 transition-colors"
+              >
+                Web Development →
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const term = "plumber";
+                  setSearchQuery(term);
+                  handleCombinedSearch();
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-white text-white hover:bg-white/10 transition-colors"
+              >
+                Plumber →
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const term = "lawyer";
+                  setSearchQuery(term);
+                  handleCombinedSearch();
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-white text-white hover:bg-white/10 transition-colors"
+              >
+                Lawyer →
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const term = "mechanic";
+                  setSearchQuery(term);
+                  handleCombinedSearch();
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-white text-white hover:bg-white/10 transition-colors"
+              >
+                Mechanic →
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const term = "car rentals";
+                  setSearchQuery(term);
+                  handleCombinedSearch();
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-white text-white hover:bg-white/10 transition-colors"
+              >
+                Car Rentals →
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const term = "private doctor";
+                  setSearchQuery(term);
+                  handleCombinedSearch();
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-white text-white hover:bg-white/10 transition-colors"
+              >
+                Private Doctor →
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -588,7 +691,7 @@ export default function HomePage() {
           {featuredJobs.length > 0 && (
             <div className="mb-12">
               <div className="w-full mx-[10px]">
-                <div className="rounded-2xl bg-[#C55E7C] shadow-md">
+                <div className="rounded-2xl bg-[#C55E7C] shadow-md py-[30px]">
                   <div className="p-5 bg-[#C55E7C] rounded-2xl grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="space-y-2 text-white">
                       <h2 className="text-[48px] leading-[50px] font-normal">
