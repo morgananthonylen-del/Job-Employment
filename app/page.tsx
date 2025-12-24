@@ -587,79 +587,75 @@ export default function HomePage() {
           {/* Recent Job Posts */}
           {featuredJobs.length > 0 && (
             <div className="mb-12">
-              <div className="mb-4 max-w-7xl mx-auto px-4 text-left">
-                <h2
-                  className="text-[48px] leading-[50px] font-normal"
-                  style={{ color: "#404145" }}
-                >
-                  Recent Job Posts
-                </h2>
-                <p
-                  className="text-[18px] leading-[24px]"
-                  style={{ color: "#404145" }}
-                >
-                  Hand-picked opportunities from businesses on FastLink
-                </p>
-                          </div>
-              <div className="max-w-4xl mx-auto px-4">
+              <div className="w-full mx-[10px]">
                 <div className="rounded-2xl bg-[#C55E7C] shadow-md">
-                  <div className="p-4 space-y-4 bg-[#C55E7C] rounded-2xl">
-                    {featuredJobs.map((job) => (
-                      <Link
-                        key={job.id}
-                        href={`/jobseeker/jobs/${job.id}`}
-                        className="block w-full px-2 py-2 rounded-lg transition-colors hover:bg-white/10"
-                      >
-                        <div className="flex items-start gap-4">
-                          {job.business?.company_logo_url && (
-                            <img
-                              src={job.business.company_logo_url}
-                              alt={job.business.company_name || "Business"}
-                              className="w-12 h-12 object-contain rounded flex-shrink-0"
-                            />
-                          )}
-                          <div className="flex-1 min-w-0 text-white">
-                            <h3 className="text-lg font-semibold mb-1">
-                              {job.title}
-                            </h3>
-                            <div className="flex flex-wrap items-center gap-3 text-sm text-white/90">
-                              {job.business?.company_name && (
-                                <span className="font-medium">{job.business.company_name}</span>
-                              )}
-                              {job.location && (
-                                <span className="flex items-center gap-1">
-                                  <MapPin className="h-4 w-4" />
-                                  {job.location}
-                                </span>
-                              )}
-                              {job.job_type && (
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
-                                  {job.job_type}
-                                </span>
-                              )}
-                              {job.created_at && (
-                                <span className="text-xs text-white/80">
-                                  {formatRelativeTime(job.created_at)}
-                                </span>
-                              )}
-                              {job.salary && (
-                                <span className="text-sm font-medium text-white">
-                                  {job.salary}
-                                </span>
-                              )}
+                  <div className="p-5 bg-[#C55E7C] rounded-2xl grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-2 text-white">
+                      <h2 className="text-[48px] leading-[50px] font-normal">
+                        Recent Job Posts
+                      </h2>
+                      <p className="text-[18px] leading-[24px] text-white/90">
+                        Hand-picked opportunities from businesses on FastLink
+                      </p>
+                    </div>
+                    <div className="space-y-4">
+                      {featuredJobs.map((job) => (
+                        <Link
+                          key={job.id}
+                          href={`/jobseeker/jobs/${job.id}`}
+                          className="block w-full px-2 py-2 rounded-lg transition-colors hover:bg-white/10"
+                        >
+                          <div className="flex items-start gap-4">
+                            {job.business?.company_logo_url && (
+                              <img
+                                src={job.business.company_logo_url}
+                                alt={job.business.company_name || "Business"}
+                                className="w-12 h-12 object-contain rounded flex-shrink-0"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0 text-white">
+                              <h3 className="text-lg font-semibold mb-1">
+                                {job.title}
+                              </h3>
+                              <div className="flex flex-wrap items-center gap-3 text-sm text-white/90">
+                                {job.business?.company_name && (
+                                  <span className="font-medium">{job.business.company_name}</span>
+                                )}
+                                {job.location && (
+                                  <span className="flex items-center gap-1">
+                                    <MapPin className="h-4 w-4" />
+                                    {job.location}
+                                  </span>
+                                )}
+                                {job.job_type && (
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="h-4 w-4" />
+                                    {job.job_type}
+                                  </span>
+                                )}
+                                {job.created_at && (
+                                  <span className="text-xs text-white/80">
+                                    {formatRelativeTime(job.created_at)}
+                                  </span>
+                                )}
+                                {job.salary && (
+                                  <span className="text-sm font-medium text-white">
+                                    {job.salary}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Link>
-                    ))}
-                    <div className="flex justify-start pt-2">
-                      <Link
-                        href="/jobs"
-                        className="text-sm font-medium text-white underline underline-offset-4 hover:text-white/80"
-                      >
-                        View more jobs
-                      </Link>
+                        </Link>
+                      ))}
+                      <div className="flex justify-start pt-2">
+                        <Link
+                          href="/jobs"
+                          className="text-sm font-medium text-white underline underline-offset-4 hover:text-white/80"
+                        >
+                          View more jobs
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>

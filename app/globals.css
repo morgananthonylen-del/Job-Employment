@@ -26,8 +26,8 @@ html {
 
 /* Force hero overlay to show despite global inherit rule */
 .hero-overlay {
-  background-color: rgba(0, 0, 0, 0.6) !important;
-  background: rgba(0, 0, 0, 0.6) !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  background: rgba(0, 0, 0, 0.5) !important;
   pointer-events: none;
 }
 

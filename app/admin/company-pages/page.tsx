@@ -202,9 +202,8 @@ export default function AdminCompanyPagesPage() {
     setLogoFileName(file.name);
     const reader = new FileReader();
     reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setFormData((prev) => ({ ...prev, company_logo_url: reader.result }));
-      }
+      const result = typeof reader.result === "string" ? reader.result : "";
+      setFormData((prev) => ({ ...prev, company_logo_url: result }));
     };
     reader.readAsDataURL(file);
   };

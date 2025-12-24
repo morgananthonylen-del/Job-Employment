@@ -7,12 +7,10 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/components/theme-provider";
 import { useToast } from "@/hooks/use-toast";
-import { Moon, Sun, Save } from "lucide-react";
+import { Save, Moon, Sun } from "lucide-react";
 
 export default function SettingsPage() {
-  const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -331,7 +329,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between p-4 border border-gray-300 rounded-lg bg-white">
                 <div className="flex items-center gap-3">
-                  {theme === "dark" ? (
+                  {false ? (
                     <Moon className="h-5 w-5 text-blue-600" />
                   ) : (
                     <Sun className="h-5 w-5 text-blue-600" />
@@ -340,17 +338,13 @@ export default function SettingsPage() {
                     <Label htmlFor="dark-mode" className="text-gray-900 font-medium cursor-pointer">
                       Dark Mode
                     </Label>
-                    <p className="text-sm text-gray-600">
-                      {theme === "dark" 
-                        ? "Switch to light mode" 
-                        : "Switch to dark mode"}
-                    </p>
+                    <p className="text-sm text-gray-600">Dark mode is disabled</p>
                   </div>
                 </div>
                 <Switch
                   id="dark-mode"
-                  checked={theme === "dark"}
-                  onCheckedChange={toggleTheme}
+                  checked={false}
+                  onCheckedChange={() => {}}
                   className="data-[state=checked]:bg-blue-600"
                 />
               </div>

@@ -14,12 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { useTheme } from "@/components/theme-provider";
 import Image from "next/image";
 
 export default function JobSeekerSettingsPage() {
   const { toast } = useToast();
-  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -272,11 +270,9 @@ export default function JobSeekerSettingsPage() {
           <div className="flex items-center justify-between border border-gray-200 rounded-lg p-4">
             <div>
               <p className="font-medium text-gray-900">Dark mode</p>
-              <p className="text-sm text-gray-500">
-                {theme === "dark" ? "Dark mode is enabled" : "Light mode is enabled"}
-              </p>
+              <p className="text-sm text-gray-500">Dark mode is disabled</p>
             </div>
-            <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
+            <Switch checked={false} onCheckedChange={() => {}} />
           </div>
         </CardContent>
       </Card>
