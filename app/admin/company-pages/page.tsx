@@ -324,6 +324,22 @@ export default function AdminCompanyPagesPage() {
               <div className="space-y-2 mt-4">
                 <Label htmlFor="company_logo_url">Logo</Label>
                 <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    {formData.company_logo_url ? (
+                      <img
+                        src={formData.company_logo_url}
+                        alt="Logo preview"
+                        className="h-12 w-12 object-contain border rounded"
+                      />
+                    ) : (
+                      <div className="h-12 w-12 flex items-center justify-center border rounded text-xs text-gray-500">
+                        No logo
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500">
+                      Upload a logo or paste a URL. Square images look best.
+                    </p>
+                  </div>
                   <div className="flex gap-2">
                     <Input
                       id="company_logo_url"
