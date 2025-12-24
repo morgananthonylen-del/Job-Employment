@@ -149,6 +149,15 @@ export function Navbar() {
                 <Building2 className="h-4 w-4" />
                 Get Listed
               </Link>
+              <Link
+                href="/vacancy"
+                className={`relative flex items-center gap-2 px-4 py-2 font-[700] leading-[34px] transition-colors ${
+                  pathname === "/vacancy" ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <Briefcase className="h-4 w-4" />
+                Vacancy
+              </Link>
             </div>
 
             {/* Right side links */}
