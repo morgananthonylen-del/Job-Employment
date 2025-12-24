@@ -654,7 +654,7 @@ export default function HomePage() {
                   <Link
                     key={business.id}
                     href={`/${business.slug}`}
-                    className="group bg-white rounded-lg shadow-md p-4 border-4 border-gray-500"
+                    className="group bg-white rounded-lg border border-gray-200 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-[0_12px_28px_rgba(37,99,235,0.28)] hover:bg-blue-50/30"
                   >
                     <div className="flex flex-col items-center text-center">
                       {business.company_logo_url ? (
@@ -662,7 +662,7 @@ export default function HomePage() {
                           <img
                             src={business.company_logo_url}
                             alt={business.company_name}
-                            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                            className="max-w-full max-h-full object-contain transition-transform duration-200 group-hover:scale-105"
                           />
                         </div>
                       ) : (

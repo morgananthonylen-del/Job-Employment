@@ -1,14 +1,28 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { Zap, Building2, Briefcase, Gavel, FileText, UserCircle, Megaphone } from "lucide-react";
+import { Zap, Building2, Briefcase, Gavel, FileText, UserCircle, Megaphone, ChevronDown } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   // Mobile menu removed
+  const [featuresOpen, setFeaturesOpen] = useState(false);
+  const featuresRef = useRef<HTMLDivElement | null>(null);
+
+  // Close features dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!featuresOpen) return;
+      if (featuresRef.current && !featuresRef.current.contains(event.target as Node)) {
+        setFeaturesOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [featuresOpen]);
 
   useEffect(() => {
     setMounted(true);
@@ -49,7 +63,7 @@ export function Navbar() {
           </div>
 
           {/* Desktop nav */}
-          <div className="hidden md:flex items-center justify-between flex-1 ml-8">
+          <div className="hidden md:flex items-center justify-between flex-1 ml-8 relative">
             {/* Left side options */}
             <div className="flex items-center gap-1 text-[16px] leading-[34px] font-[700]">
               <Link
@@ -76,39 +90,56 @@ export function Navbar() {
                   <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
                 )}
               </Link>
-              <Link
-                href="/market-place"
-                className={`relative flex items-center gap-2 px-4 py-2 font-[700] leading-[34px] transition-colors ${
-                  isMarketPlace ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <Gavel className="h-4 w-4" />
-                Market Place
-                {isMarketPlace && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
-                )}
-              </Link>
-              <Link
-                href="/shoutouts"
-                className={`relative flex items-center gap-2 px-4 py-2 font-[700] leading-[34px] transition-colors ${
-                  isShoutouts ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <Megaphone className="h-4 w-4" />
-                Shoutouts
-                {isShoutouts && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
-                )}
-              </Link>
-              <Link
-                href="/quote"
-                className={`relative flex items-center gap-2 px-4 py-2 font-[700] leading-[34px] transition-colors ${
-                  isQuote ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <FileText className="h-4 w-4" />
-                Get Quote
-              </Link>
+              <div className="relative" ref={featuresRef}>
+                <button
+                  type="button"
+                  onClick={() => setFeaturesOpen((prev) => !prev)}
+                  className={`relative flex items-center gap-2 px-4 py-2 font-[700] leading-[34px] transition-colors ${
+                    isMarketPlace || isQuote ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  <span>Features</span>
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                <div
+                  className={`absolute left-0 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg z-50 transform origin-top transition-all duration-200 ${
+                    featuresOpen
+                      ? "opacity-100 scale-y-100 translate-y-0"
+                      : "opacity-0 scale-y-95 -translate-y-1 pointer-events-none"
+                  }`}
+                >
+                  <Link
+                    href="/market-place"
+                    onClick={() => setFeaturesOpen(false)}
+                    className={`flex items-center gap-2 px-4 py-2 text-[15px] font-[600] transition-colors ${
+                      isMarketPlace ? "text-blue-600 bg-blue-50" : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Gavel className="h-4 w-4" />
+                    Market Place
+                  </Link>
+                  <Link
+                    href="/quote"
+                    onClick={() => setFeaturesOpen(false)}
+                    className={`flex items-center gap-2 px-4 py-2 text-[15px] font-[600] transition-colors ${
+                      isQuote ? "text-blue-600 bg-blue-50" : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <FileText className="h-4 w-4" />
+                    Get Quote
+                  </Link>
+                  <Link
+                    href="/shoutouts"
+                    onClick={() => setFeaturesOpen(false)}
+                    className={`flex items-center gap-2 px-4 py-2 text-[15px] font-[600] transition-colors ${
+                      isShoutouts ? "text-blue-600 bg-blue-50" : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Megaphone className="h-4 w-4" />
+                    Shoutouts
+                  </Link>
+                </div>
+              </div>
               <Link
                 href="/get-listed"
                 className={`relative flex items-center gap-2 px-4 py-2 font-[700] leading-[34px] transition-colors ${
