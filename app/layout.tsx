@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
-import { NetworkStatusToast } from "@/components/network-status-toast";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 
@@ -38,13 +36,11 @@ export default function RootLayout({
       className={`${inter.variable} ${sourceSans.variable}`}
       suppressHydrationWarning
     >
-      <body className={`${sourceSans.className} overflow-x-hidden`} suppressHydrationWarning>
+      <body className={`${sourceSans.className} overflow-x-hidden bg-white text-gray-900`} suppressHydrationWarning>
         <ThemeProvider>
           <Navbar />
           {children}
           <Footer />
-          <NetworkStatusToast />
-          <Toaster />
         </ThemeProvider>
       </body>
     </html>

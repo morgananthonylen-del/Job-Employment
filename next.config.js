@@ -32,6 +32,8 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  // Minimal Turbopack config to silence Next 16 warning
+  turbopack: {},
   // Reduce bundle size
   webpack: (config, { isServer }) => {
     if (!isServer) {

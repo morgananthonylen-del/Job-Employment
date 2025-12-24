@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,8 @@ export default function AdminCompanyPagesPage() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<CompanyPage | null>(null);
+  const [logoFileName, setLogoFileName] = useState<string>("");
+  const logoFileInputRef = useRef<HTMLInputElement | null>(null);
   const [formData, setFormData] = useState({
     company_name: "",
     slug: "",
@@ -161,6 +163,7 @@ export default function AdminCompanyPagesPage() {
 
   const resetForm = () => {
     setEditingPage(null);
+    setLogoFileName("");
     setFormData({
       company_name: "",
       slug: "",
@@ -191,6 +194,19 @@ export default function AdminCompanyPagesPage() {
     if (!editingPage && !formData.slug) {
       setFormData((prev) => ({ ...prev, slug: generateSlug(value) }));
     }
+  };
+
+  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setFormData((prev) => ({ ...prev, company_logo_url: reader.result }));
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -307,14 +323,35 @@ export default function AdminCompanyPagesPage() {
                 />
               </div>
               <div className="space-y-2 mt-4">
-                <Label htmlFor="company_logo_url">Logo URL</Label>
-                <Input
-                  id="company_logo_url"
-                  type="url"
-                  value={formData.company_logo_url}
-                  onChange={(e) => setFormData({ ...formData, company_logo_url: e.target.value })}
-                  placeholder="https://example.com/logo.png"
-                />
+                <Label htmlFor="company_logo_url">Logo</Label>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Input
+                      id="company_logo_url"
+                      type="url"
+                      value={formData.company_logo_url}
+                      onChange={(e) => setFormData({ ...formData, company_logo_url: e.target.value })}
+                      placeholder="https://example.com/logo.png or base64 from upload"
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => logoFileInputRef.current?.click()}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Upload Logo
+                    </Button>
+                  </div>
+                  {logoFileName && (
+                    <p className="text-xs text-gray-500">Selected: {logoFileName}</p>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={logoFileInputRef}
+                    onChange={handleLogoFileChange}
+                    className="hidden"
+                  />
+                </div>
               </div>
             </div>
 

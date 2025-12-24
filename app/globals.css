@@ -13,6 +13,24 @@ html {
   background: #ffffff !important;
 }
 
+/* Allow hero section to stay transparent without nuking overlays */
+.hero-transparent {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+.hero-transparent .hero-content-clear,
+.hero-transparent .hero-content-clear * {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Force hero overlay to show despite global inherit rule */
+.hero-overlay {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  pointer-events: none;
+}
+
 html.dark {
   background-color: hsl(222.2, 84%, 4.9%) !important;
   background: hsl(222.2, 84%, 4.9%) !important;
@@ -372,70 +390,14 @@ button[data-radix-select-trigger],
   }
 }
 
-/* FORCE REMOVE #FFFF00 YELLOW FROM ENTIRE PAGE - GLOBAL FIX */
-html,
-html *,
-body,
-body * {
-  background-color: inherit !important;
-}
-
+/* Remove global inherit override that forces white backgrounds */
+/* Keep body default light via layout instead */
 html {
-  background-color: #ffffff !important;
-  background: #ffffff !important;
+  background-color: #ffffff;
+  background: #ffffff;
 }
 
-html.dark {
-  background-color: hsl(var(--background)) !important;
-  background: hsl(var(--background)) !important;
-}
-
-/* FORCE REMOVE #FFFF00 YELLOW FROM ALL POPUPS, DIALOGS, TOASTS, MODALS - NO YELLOW EVER */
-[data-radix-toast-root],
-[data-radix-toast-root] *,
-[data-radix-dialog-content],
-[data-radix-dialog-content] *,
-[data-radix-popover-content],
-[data-radix-popover-content] *,
-[role="dialog"],
-[role="dialog"] *,
-[role="alertdialog"],
-[role="alertdialog"] *,
-.modal,
-.modal *,
-.popup,
-.popup *,
-.dialog,
-.dialog *,
-.toast,
-.toast * {
-  background-color: white !important;
-  background: white !important;
-  color: #1f2937 !important;
-}
-
-/* Specifically target DialogContent to ensure white background - NO YELLOW */
-[data-radix-dialog-content],
-[data-radix-dialog-content] > *,
-[data-radix-dialog-content] form,
-[data-radix-dialog-content] form > * {
-  background-color: white !important;
-  background: white !important;
-}
-
-/* Force white on all inputs inside dialog - prevent autofill yellow */
-[data-radix-dialog-content] input,
-[data-radix-dialog-content] input[type="text"],
-[data-radix-dialog-content] input[type="email"],
-[data-radix-dialog-content] input[type="tel"],
-[data-radix-dialog-content] input[type="number"],
-[data-radix-dialog-content] textarea,
-[data-radix-dialog-content] select {
-  background-color: white !important;
-  background: white !important;
-  -webkit-box-shadow: 0 0 0 1000px white inset !important;
-  box-shadow: 0 0 0 1000px white inset !important;
-}
+/* Remove aggressive forced white backgrounds on popups */
 
 .dark [data-radix-toast-root],
 .dark [data-radix-toast-root] *,

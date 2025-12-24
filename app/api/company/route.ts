@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
         .order("company_name", { ascending: true });
 
       if (fetchError) {
-        console.error("Supabase error:", fetchError);
-        throw fetchError;
+        console.error("Supabase error (search company_pages):", fetchError);
+        return NextResponse.json([], { status: 200, headers: { "x-error": "company_pages search failed" } });
       }
 
       // Filter results that match the search term in any field
@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
         );
       });
 
-      console.log(`Found ${filteredData.length} company pages for search: "${search}"`);
       return NextResponse.json(filteredData);
     }
 
@@ -46,17 +45,13 @@ export async function GET(request: NextRequest) {
       .order("company_name", { ascending: true });
 
     if (error) {
-      console.error("Supabase error:", error);
-      throw error;
+      console.error("Supabase error (list company_pages):", error);
+      return NextResponse.json([], { status: 200, headers: { "x-error": "company_pages fetch failed" } });
     }
 
-    console.log(`Found ${data?.length || 0} company pages`);
     return NextResponse.json(data || []);
   } catch (error: any) {
     console.error("Error fetching company pages:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to fetch company pages" },
-      { status: 500 }
-    );
+    return NextResponse.json([], { status: 200, headers: { "x-error": "company_pages unhandled" } });
   }
 }

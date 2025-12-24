@@ -11,7 +11,7 @@ export default function MarketPlacePage() {
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
               Market Place – buy, sell and auction in one place
             </h1>
-            <p className="text-sm md:text-base text-gray-800 max-w-2xl">
+            <p className="text-[20px] leading-[28px] text-gray-800 max-w-2xl">
               Market Place is where people in Fiji can put up things they’re selling and
               where buyers can find real items from real people – from tools and furniture
               to vehicles and business equipment. Auctions are also available for special
@@ -26,9 +26,9 @@ export default function MarketPlacePage() {
                 <div className="mt-1">
                   <Package className="h-5 w-5 text-emerald-600" />
                 </div>
-                <div className="text-xs text-gray-800">
-                  <p className="font-semibold text-gray-900 mb-1">List what you have</p>
-                  <p>
+              <div className="text-[18px] leading-[24px] text-gray-800">
+                <p className="font-semibold text-gray-900 mb-1 text-[18px] leading-[24px]">List what you have</p>
+                <p className="text-[18px] leading-[24px]">
                     Take a few photos, tell people what you’re selling and where you are
                     based. Keep it simple and honest.
                   </p>
@@ -38,9 +38,9 @@ export default function MarketPlacePage() {
                 <div className="mt-1">
                   <Tag className="h-5 w-5 text-sky-600" />
                 </div>
-                <div className="text-xs text-gray-800">
-                  <p className="font-semibold text-gray-900 mb-1">Set a price or accept offers</p>
-                  <p>
+              <div className="text-[18px] leading-[24px] text-gray-800">
+                <p className="font-semibold text-gray-900 mb-1 text-[18px] leading-[24px]">Set a price or accept offers</p>
+                <p className="text-[18px] leading-[24px]">
                     Put a straight price, say “ono” (or nearest offer), or let buyers send
                     you offers through FastLink.
                   </p>
@@ -50,9 +50,9 @@ export default function MarketPlacePage() {
                 <div className="mt-1">
                   <Gavel className="h-5 w-5 text-violet-600" />
                 </div>
-                <div className="text-xs text-gray-800">
-                  <p className="font-semibold text-gray-900 mb-1">Run auctions if you want</p>
-                  <p>
+              <div className="text-[18px] leading-[24px] text-gray-800">
+                <p className="font-semibold text-gray-900 mb-1 text-[18px] leading-[24px]">Run auctions if you want</p>
+                <p className="text-[18px] leading-[24px]">
                     For special items, you’ll also be able to run timed auctions so people
                     can bid and you get the best price.
                   </p>
@@ -63,8 +63,8 @@ export default function MarketPlacePage() {
 
           {/* Plain-language content for everyday users */}
           <section>
-            <div className="space-y-5 text-sm md:text-base text-gray-800 leading-relaxed">
-              <p>
+        <div className="space-y-5 text-[20px] leading-[28px] text-gray-800">
+          <p>
                 Everyone has things sitting at home or in the office that they don’t use
                 anymore – tools you’ve upgraded, furniture from an old shop, a vehicle
                 you’ve replaced, or extra stock from a small business. Market Place gives

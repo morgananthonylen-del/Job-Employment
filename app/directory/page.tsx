@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Search, Building2 } from "lucide-react";
+import { ImageSlider } from "@/components/image-slider";
 
 interface Business {
   id: string;
@@ -32,7 +33,6 @@ export default function DirectoryPage() {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const searchInputRef = useRef<HTMLDivElement>(null);
   const [sliderImages, setSliderImages] = useState<SliderImage[]>([]);
-  const [currentSliderIndex, setCurrentSliderIndex] = useState(0);
 
   // Typing effect for business search placeholder
   useEffect(() => {
@@ -190,24 +190,14 @@ export default function DirectoryPage() {
   useEffect(() => {
     const fetchSliderImages = async () => {
       try {
-        console.log("Directory: Fetching slider images for page=directory");
-        const response = await fetch("/api/slider-images?page=directory&t=" + Date.now(), {
-          cache: "no-store", // Don't cache to see fresh data
-        });
-        
-        console.log("Directory: Response status:", response.status);
-        
+          const response = await fetch("/api/slider-images?page=directory&t=" + Date.now(), {
+            cache: "no-store", // Don't cache to see fresh data
+          });
+
         if (response.ok) {
           const data = await response.json();
-          console.log("Directory: Received images:", data?.length || 0, data);
           const images = data || [];
           setSliderImages(images);
-          if (images.length > 0) {
-            setCurrentSliderIndex(0);
-            console.log("Directory: Set slider images, first image:", images[0]);
-          } else {
-            console.warn("Directory: No slider images found for page=directory");
-          }
         } else {
           const errorData = await response.json().catch(() => ({}));
           console.error("Directory: Failed to fetch slider images:", errorData);
@@ -220,80 +210,17 @@ export default function DirectoryPage() {
     fetchSliderImages();
   }, []);
 
-  // Auto-rotate slider
-  useEffect(() => {
-    if (sliderImages.length <= 1) return;
-    
-    const timer = setInterval(() => {
-      setCurrentSliderIndex((prev) => (prev + 1) % sliderImages.length);
-    }, 5000);
-
-    return () => clearInterval(timer);
-  }, [sliderImages.length]);
-
   return (
     <div className="min-h-screen bg-black">
       {/* Hero Section with Slider Background */}
-      <section className="relative h-[400px] md:h-[500px] overflow-hidden mb-8" style={{ 
-        backgroundColor: sliderImages.length === 0 ? "#1f2937" : "transparent"
-      }}>
-        {/* Slider Images - Background */}
-        {sliderImages.length > 0 ? (
-          sliderImages.map((image, index) => {
-            const isActive = index === currentSliderIndex;
-            console.log(`Directory: Rendering image ${index}, active: ${isActive}, URL: ${image.image_url}`);
-            return (
-              <img
-                key={image.id || `img-${index}`}
-                src={image.image_url}
-                alt={image.title || "Directory background"}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  opacity: isActive ? 1 : 0,
-                  transition: "opacity 1s ease-in-out",
-                  zIndex: isActive ? 1 : 0,
-                  pointerEvents: "none",
-                }}
-                onError={(e) => {
-                  console.error("Directory: Slider image failed to load:", image.image_url);
-                }}
-                onLoad={() => {
-                  console.log("Directory: Image loaded successfully:", image.image_url);
-                }}
-              />
-            );
-          })
-        ) : (
-          <div className="absolute inset-0 bg-gray-200" style={{ zIndex: 1 }}>
-            <div className="flex items-center justify-center h-full text-gray-500">
-              No slider images for directory page
-            </div>
-          </div>
-        )}
-
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-black/40" style={{ zIndex: 2 }} />
-
-        {/* Slider navigation dots */}
-        {sliderImages.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2" style={{ zIndex: 30 }}>
-            {sliderImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSliderIndex(index)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentSliderIndex ? "bg-white w-8" : "bg-white/50 w-2 hover:bg-white/75"
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-        )}
+      <section className="relative h-[400px] md:h-[500px] overflow-hidden mb-8 bg-gray-200">
+        <div className="absolute inset-0">
+          {sliderImages.length > 0 ? (
+            <ImageSlider images={sliderImages} autoPlay interval={5000} />
+          ) : (
+            <div className="w-full h-full bg-gray-300" />
+          )}
+        </div>
 
         {/* Content Overlay */}
         <div className="relative h-full flex items-center z-10" style={{ zIndex: 10 }}>

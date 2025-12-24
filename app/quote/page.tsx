@@ -9,7 +9,7 @@ export default function QuotePage() {
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
               Get Quote – let businesses come to you
             </h1>
-            <p className="text-sm md:text-base text-gray-800 max-w-2xl">
+            <p className="text-[20px] leading-[28px] text-gray-800 max-w-2xl">
               Sometimes you just want to tell someone the problem and get a straight answer.
               Get Quote is a simple way for everyday people to describe what they need, and
               have the right local businesses reach out with prices and ideas.
@@ -23,27 +23,27 @@ export default function QuotePage() {
                 <div className="mt-1">
                   <Wrench className="h-5 w-5 text-emerald-600" />
                 </div>
-                <div className="text-xs text-gray-800">
-                  <p className="font-semibold text-gray-900 mb-1">1. Tell us the job</p>
-                  <p>“Leaking roof in Suva”, “Need a surveyor for new land”, “Office aircon not working”… in your own words.</p>
+                <div className="text-[18px] leading-[24px] text-gray-800">
+                  <p className="font-semibold text-gray-900 mb-1 text-[18px] leading-[24px]">1. Tell us the job</p>
+                  <p className="text-[18px] leading-[24px]">“Leaking roof in Suva”, “Need a surveyor for new land”, “Office aircon not working”… in your own words.</p>
                 </div>
               </div>
               <div className="flex gap-3 rounded-2xl bg-gray-50 border border-gray-200 p-3">
                 <div className="mt-1">
                   <MessageCircle className="h-5 w-5 text-sky-600" />
                 </div>
-                <div className="text-xs text-gray-800">
-                  <p className="font-semibold text-gray-900 mb-1">2. We match you</p>
-                  <p>Your request appears to businesses on FastLink that want this kind of work, in your area.</p>
+                <div className="text-[18px] leading-[24px] text-gray-800">
+                  <p className="font-semibold text-gray-900 mb-1 text-[18px] leading-[24px]">2. We match you</p>
+                  <p className="text-[18px] leading-[24px]">Your request appears to businesses on FastLink that want this kind of work, in your area.</p>
                 </div>
               </div>
               <div className="flex gap-3 rounded-2xl bg-gray-50 border border-gray-200 p-3">
                 <div className="mt-1">
                   <CheckCircle2 className="h-5 w-5 text-violet-600" />
                 </div>
-                <div className="text-xs text-gray-800">
-                  <p className="font-semibold text-gray-900 mb-1">3. You choose</p>
-                  <p>Compare replies, ask questions, then pick the business you feel good about. No pressure.</p>
+                <div className="text-[18px] leading-[24px] text-gray-800">
+                  <p className="font-semibold text-gray-900 mb-1 text-[18px] leading-[24px]">3. You choose</p>
+                  <p className="text-[18px] leading-[24px]">Compare replies, ask questions, then pick the business you feel good about. No pressure.</p>
                 </div>
               </div>
             </div>
@@ -51,7 +51,7 @@ export default function QuotePage() {
 
           {/* Plain-language presell copy aimed at regular users */}
           <section>
-            <div className="space-y-5 text-sm md:text-base text-gray-800 leading-relaxed">
+            <div className="space-y-5 text-[20px] leading-[28px] text-gray-800">
               <p>
                 If you’ve ever tried to fix something at home or organise work for your
                 office, you know how quickly it turns into a headache. You google a few
@@ -98,7 +98,7 @@ export default function QuotePage() {
                 as soon as it’s ready.
               </p>
 
-              <p className="text-xs text-gray-600">
+              <p className="text-[20px] leading-[28px] text-gray-800">
                 No spam, no tricks – just a faster, easier way to get everyday problems in
                 front of the right people.
               </p>

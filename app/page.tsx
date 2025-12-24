@@ -50,39 +50,15 @@ export default function HomePage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [autocompleteSuggestions, setAutocompleteSuggestions] = useState<Business[]>([]);
   const [featuredBusinesses, setFeaturedBusinesses] = useState<Business[]>([]);
+  const [allBusinesses, setAllBusinesses] = useState<Business[]>([]);
+  const [businessesError, setBusinessesError] = useState<string>("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [featuredJobs, setFeaturedJobs] = useState<Job[]>([]);
   const [sliderImages, setSliderImages] = useState<SliderImage[]>([]);
-  const [currentSliderIndex, setCurrentSliderIndex] = useState(0);
-  const [imagesLoaded, setImagesLoaded] = useState<Set<string>>(new Set());
-
-  // Reset slider index when images change
-  useEffect(() => {
-    if (sliderImages.length > 0 && currentSliderIndex >= sliderImages.length) {
-      setCurrentSliderIndex(0);
-    }
-  }, [sliderImages.length, currentSliderIndex]);
-
-  // Preload all slider images for faster display
-  useEffect(() => {
-    if (sliderImages.length === 0) return;
-
-    const preloadImages = () => {
-      sliderImages.forEach((image) => {
-        if (!image.image_url) return;
-        
-        const img = new Image();
-        img.onload = () => {
-          setImagesLoaded((prev) => new Set(prev).add(image.image_url));
-        };
-        // If a URL is broken or blocked, just skip it silently
-        img.onerror = () => {};
-        img.src = image.image_url;
-      });
-    };
-
-    preloadImages();
-  }, [sliderImages]);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [heroSuggestions, setHeroSuggestions] = useState<Business[]>([]);
+  const [showHeroSuggestions, setShowHeroSuggestions] = useState(false);
+  const [heroSelectedIndex, setHeroSelectedIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
   const [jobsLoading, setJobsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -90,6 +66,7 @@ export default function HomePage() {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const searchInputRef = useRef<HTMLDivElement>(null);
+  const heroSearchRef = useRef<HTMLDivElement>(null);
 
   const categories = [
     { name: "Surveyors", searchTerm: "surveyor" },
@@ -179,49 +156,39 @@ export default function HomePage() {
     // Fetch slider images, featured businesses, and featured jobs
     fetchSliderImages();
     fetchFeaturedBusinesses();
+    fetchAllBusinesses();
     fetchFeaturedJobs();
   }, [router]);
 
   const fetchSliderImages = async () => {
     try {
       const response = await fetch("/api/slider-images", {
-        cache: "force-cache", // Cache the API response
+        cache: "no-store",
       });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const images = data || [];
-        setSliderImages(images);
-        // Reset to first image when new images load
-        if (images.length > 0) {
-          setCurrentSliderIndex(0);
-          // Immediately preload the first image
-          const firstImage = images[0];
-          if (firstImage?.image_url) {
-            const img = new Image();
-            img.src = firstImage.image_url;
-          }
-        }
-    } else {
+
+      if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("Failed to fetch slider images:", errorData);
-    }
+        setSliderImages([]);
+        return;
+      }
+
+      const data = await response.json();
+      const images = Array.isArray(data) ? data : [];
+      setSliderImages(images);
+
+      if (images.length > 0) {
+        const firstImage = images[0];
+        if (firstImage?.image_url) {
+          const img = new Image();
+          img.src = firstImage.image_url;
+        }
+      }
     } catch (error) {
       console.error("Error fetching slider images:", error);
+      setSliderImages([]);
     }
   };
-
-  // Auto-rotate background slider
-  useEffect(() => {
-    if (sliderImages.length <= 1) return;
-    
-    const timer = setInterval(() => {
-      setCurrentSliderIndex((prev) => (prev + 1) % sliderImages.length);
-    }, 5000);
-
-    return () => clearInterval(timer);
-  }, [sliderImages.length]);
-
 
   const fetchFeaturedBusinesses = async () => {
     try {
@@ -232,6 +199,24 @@ export default function HomePage() {
       }
     } catch (error) {
       console.error("Error fetching featured businesses:", error);
+    }
+  };
+
+  const fetchAllBusinesses = async () => {
+    try {
+      const response = await fetch("/api/company", { cache: "no-store" });
+      if (response.ok) {
+        const data = await response.json();
+        setAllBusinesses(Array.isArray(data) ? data : []);
+        setBusinessesError("");
+      } else {
+        setBusinessesError(`Failed to load businesses (HTTP ${response.status})`);
+        setAllBusinesses([]);
+      }
+    } catch (error) {
+      console.error("Error fetching all businesses:", error);
+      setAllBusinesses([]);
+      setBusinessesError("Failed to load businesses.");
     }
   };
 
@@ -248,7 +233,8 @@ export default function HomePage() {
 
       const proJobs = data.filter((job) => job.promotion_tier === "pro");
       const source = proJobs.length > 0 ? proJobs : data;
-      setFeaturedJobs(source.slice(0, 6));
+      // Show up to 10 recent jobs
+      setFeaturedJobs(source.slice(0, 10));
     } catch (error) {
       console.error("Error fetching featured jobs:", error);
       setFeaturedJobs([]);
@@ -287,6 +273,42 @@ export default function HomePage() {
 
     return () => clearTimeout(timer);
   }, [businessSearchQuery, fetchAutocompleteSuggestions]);
+
+  // Hero autocomplete suggestions (businesses)
+  const fetchHeroSuggestions = useCallback(async (searchTerm: string) => {
+    if (searchTerm.trim().length < 2) {
+      setHeroSuggestions([]);
+      setShowHeroSuggestions(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/company?search=${encodeURIComponent(searchTerm.trim())}`);
+      if (response.ok) {
+        const data = await response.json();
+        setHeroSuggestions(Array.isArray(data) ? data.slice(0, 8) : []);
+        setShowHeroSuggestions(true);
+        setHeroSelectedIndex(-1);
+      }
+    } catch (error) {
+      console.error("Error fetching hero autocomplete suggestions:", error);
+      setHeroSuggestions([]);
+      setShowHeroSuggestions(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim()) {
+        fetchHeroSuggestions(searchQuery);
+      } else {
+        setHeroSuggestions([]);
+        setShowHeroSuggestions(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, fetchHeroSuggestions]);
 
   const handleSearch = async (categoryTerm?: string) => {
     setLoading(true);
@@ -329,7 +351,7 @@ export default function HomePage() {
     setHasSearched(false);
   };
 
-  const handleJobSearch = async () => {
+  const handleJobSearch = async (termOverride?: string) => {
     setJobsLoading(true);
     try {
       const response = await fetch("/api/jobs");
@@ -338,8 +360,9 @@ export default function HomePage() {
       let data = await response.json();
       
       // Filter by search term if provided
-      if (searchQuery.trim()) {
-        const term = searchQuery.trim().toLowerCase();
+      const termSource = termOverride ?? searchQuery;
+      if (termSource.trim()) {
+        const term = termSource.trim().toLowerCase();
         data = data.filter((job: Job) =>
           job.title?.toLowerCase().includes(term) ||
           job.location?.toLowerCase().includes(term) ||
@@ -365,8 +388,28 @@ export default function HomePage() {
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      handleJobSearch();
+      handleCombinedSearch();
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHeroSelectedIndex((prev) =>
+        prev < heroSuggestions.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHeroSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+    } else if (e.key === "Escape") {
+      setShowHeroSuggestions(false);
+      setHeroSelectedIndex(-1);
     }
+  };
+
+  const handleCombinedSearch = () => {
+    const term = searchQuery.trim();
+    setBusinessSearchQuery(term);
+    handleSearch(term);
+    handleJobSearch(term);
+    setShowHeroSuggestions(false);
+    setHeroSelectedIndex(-1);
   };
 
   // Close autocomplete when clicking outside
@@ -375,138 +418,140 @@ export default function HomePage() {
       if (searchInputRef.current && !searchInputRef.current.contains(event.target as Node)) {
         setShowAutocomplete(false);
       }
+      if (heroSearchRef.current && !heroSearchRef.current.contains(event.target as Node)) {
+        setShowHeroSuggestions(false);
+        setHeroSelectedIndex(-1);
+      }
     };
 
-    if (showAutocomplete) {
+    if (showAutocomplete || showHeroSuggestions) {
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
-  }, [showAutocomplete]);
+  }, [showAutocomplete, showHeroSuggestions]);
+
+  // Sync hero index when images change
+  useEffect(() => {
+    if (sliderImages.length > 0) {
+      setHeroIndex(0);
+    }
+  }, [sliderImages.length]);
+
+  // Auto-play hero slider (fade)
+  useEffect(() => {
+    if (sliderImages.length <= 1) return;
+    const id = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % sliderImages.length);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [sliderImages.length]);
 
   return (
     <>
-      {/* Hero Section - Text and Image Same Height, Touching */}
-      <section className="mb-10 bg-black">
-        <div className="max-w-7xl mx-auto w-full">
-          <div className="grid grid-cols-1 md:grid-cols-2" style={{ height: "500px", gap: 0 }}>
-            {/* Hero Content - Left Side */}
-            <div className="flex items-center h-full px-4 md:px-8" style={{ paddingRight: 0 }}>
-              <div className="w-full px-6 md:px-10 py-6 md:py-8 bg-white/90 shadow-2xl backdrop-blur-sm h-full flex flex-col justify-center">
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
-                  Find work. Find businesses.
-                </h1>
-                <p className="text-[18px] leading-[24px] text-gray-700 mb-6 max-w-xl">
-                  FastLink connects everyday people with local businesses and real job opportunities
-                  across Fiji. Start with a quick search or browse what's featured today.
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <Link
-                    href="/jobs"
-                    className="inline-flex items-center justify-center rounded-full border border-blue-600 text-blue-700 hover:bg-blue-50 px-6 py-3 text-sm font-medium transition"
+      {/* Hero with full-bleed slider */}
+      <section className="hero-transparent relative w-full h-screen min-h-[800px] overflow-hidden flex items-center" style={{ background: "transparent" }}>
+        <div className="absolute inset-0">
+          {sliderImages.length > 0 ? (
+            sliderImages.map((image, index) => (
+              <div
+                key={image.id}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                  index === heroIndex ? "opacity-100 z-0" : "opacity-0"
+                }`}
+              >
+                <img
+                  src={image.image_url}
+                  alt={image.title || "Slider image"}
+                  className="w-full h-full object-cover"
+                />
+                {/* Overlay for text readability */}
+                <div className="absolute inset-0 hero-overlay" />
+              </div>
+            ))
+          ) : (
+            <div className="w-full h-full bg-gray-300" />
+          )}
+        </div>
+
+        <div
+          className="hero-content-clear relative z-20 max-w-4xl px-6 md:px-12 py-6"
+          style={{ background: "transparent" }}
+        >
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight text-white" style={{ background: "transparent" }}>
+            Find work. Find businesses.
+          </h1>
+          <p className="mt-4 text-lg md:text-xl text-white max-w-2xl" style={{ background: "transparent" }}>
+            FastLink connects everyday people with local businesses and real job opportunities across Fiji.
+            Start with a quick search or browse what's featured today.
+          </p>
+          <div className="mt-6 w-full max-w-2xl" ref={heroSearchRef} style={{ background: "transparent" }}>
+            <input
+              type="text"
+              placeholder="Search for jobs or businesses..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleCombinedSearch();
+              }}
+              className="w-full px-5 py-5 text-[20px] leading-[26px] font-[280] text-white placeholder:text-[20px] placeholder:leading-[26px] placeholder:text-white/75 bg-transparent rounded-lg shadow-none outline-none border-2 border-white/70"
+              style={{
+                boxShadow:
+                  "0 0 0 1px rgba(255,255,255,0.35), 0 6px 18px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.2)",
+                backdropFilter: "blur(2px)",
+              }}
+            />
+            {showHeroSuggestions && heroSuggestions.length > 0 && (
+              <div className="mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-64 overflow-auto">
+                {heroSuggestions.map((business, index) => (
+                  <button
+                    key={business.id}
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery(business.company_name || "");
+                      setShowHeroSuggestions(false);
+                      setHeroSelectedIndex(-1);
+                      handleCombinedSearch();
+                    }}
+                    onMouseEnter={() => setHeroSelectedIndex(index)}
+                    className={`w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 ${
+                      heroSelectedIndex === index ? "bg-gray-50" : "bg-white"
+                    }`}
                   >
-                    <Briefcase className="h-4 w-4 mr-2" />
-                    Job Search
-            </Link>
-                  <Link
-                    href="/directory"
-                    className="inline-flex items-center justify-center rounded-full border border-blue-600 text-blue-700 hover:bg-blue-50 px-6 py-3 text-sm font-medium transition"
-                  >
-                    <Building2 className="h-4 w-4 mr-2" />
-                    Business Directory
-              </Link>
+                    {business.company_name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      </div>
-
-            {/* Hero Slider - Right Side, Same Height, Touching */}
-            <div className="relative overflow-hidden bg-gray-200 h-full shadow-2xl" style={{ marginLeft: 0 }}>
-              {sliderImages.length > 0 ? (
-                <>
-                  {sliderImages.map((image, index) => {
-                    const isActive = index === currentSliderIndex;
-                    return (
-            <div
-                        key={image.id || `img-${index}`}
-                        className="absolute inset-0"
-                        style={{
-                          opacity: isActive ? 1 : 0,
-                          transition: "opacity 1s ease-in-out",
-                          zIndex: isActive ? 2 : 1,
-                        }}
-                      >
-                        <img
-                          src={image.image_url}
-                          alt={image.title || "Hero slide"}
-                          className="w-full h-full object-cover"
-                          onError={() => {
-                            // If an image fails to load (e.g. deleted from storage), remove it from the slider list
-                            setSliderImages((prev) =>
-                              prev.filter((img) => img.id !== image.id)
-                            );
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
-
-                  {sliderImages.length > 1 && (
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-                      {sliderImages.map((_, index) => (
-              <button
-                key={index}
-                          onClick={() => setCurrentSliderIndex(index)}
-                          className={`h-2 rounded-full transition-all duration-300 ${
-                            index === currentSliderIndex ? "bg-white w-8" : "bg-white/50 w-2 hover:bg-white/75"
-                          }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-                  )}
-                </>
-              ) : (
-                <div className="absolute inset-0 bg-gray-300" />
-              )}
-            </div>
-          </div>
-                          </div>
       </section>
-
 
       <div className="min-h-screen bg-white">
 
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Featured Businesses Section - directly after hero */}
-          {featuredBusinesses.length > 0 && (
-            <div className="mb-12">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2
-                    className="text-[48px] leading-[50px] font-bold"
-                    style={{ color: "#404145" }}
-                  >
-                    Featured Businesses
-                  </h2>
-                  <p
-                    className="text-[18px] leading-[24px]"
-                    style={{ color: "#404145" }}
-                  >
-                    Discover businesses showcasing themselves on FastLink
-                  </p>
-                </div>
+          {/* Featured Businesses (above Recent Job Posts) */}
+          <div className="mb-16">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 text-[38px] leading-[42px]" style={{ color: "#404145", fontFamily: "Michroma, sans-serif", marginTop: "10px" }}>
+                <span>Businesses On FastLink</span>
+                <span aria-hidden="true" className="text-gray-700">→</span>
                 <Link
-                  href="/directory"
-                  className="text-sm font-medium text-blue-400 hover:text-blue-300 underline underline-offset-4"
+                  href="/register"
+                  className="inline-flex items-center gap-1 text-[38px] leading-[42px] font-medium text-blue-500 hover:text-blue-600"
                 >
-                  View business directory
+                  <span>Signup Today - It's Free!</span>
                 </Link>
               </div>
+            </div>
+            {businessesError ? (
+              <div className="text-sm text-red-600">{businessesError}</div>
+            ) : featuredBusinesses.length > 0 || allBusinesses.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {featuredBusinesses.map((business) => (
+                {(featuredBusinesses.length > 0 ? featuredBusinesses : allBusinesses).map((business) => (
                   <Link
                     key={business.id}
                     href={`/${business.slug}`}
-                    className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-4 border border-gray-100 hover:border-blue-300"
+                    className="group bg-white rounded-lg shadow-md p-4 border-4 border-gray-500"
                   >
                     <div className="flex flex-col items-center text-center">
                       {business.company_logo_url ? (
@@ -522,97 +567,101 @@ export default function HomePage() {
                           <Building2 className="h-10 w-10 text-gray-400" />
                         </div>
                       )}
-                      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                      <h3 className="text-[16px] font-semibold text-gray-900">
                         {business.company_name}
                       </h3>
                       {business.company_description && (
                         <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                           {business.company_description}
                         </p>
-            )}
-          </div>
-                </Link>
+                      )}
+                          </div>
+                  </Link>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="text-gray-600 text-sm">No businesses found.</div>
+            )}
+          </div>
 
           {/* Recent Job Posts */}
           {featuredJobs.length > 0 && (
             <div className="mb-12">
-              <div className="flex items-center justify-between mb-4 max-w-4xl mx-auto">
-                <div>
-                  <h2
-                    className="text-[48px] leading-[50px] font-bold"
-                    style={{ color: "#404145" }}
-                  >
-                    Recent Job Posts
-                  </h2>
-                  <p
-                    className="text-[18px] leading-[24px]"
-                    style={{ color: "#404145" }}
-                  >
-                    Hand-picked opportunities from businesses on FastLink
-                  </p>
-                </div>
-                <Link
-                  href="/jobs"
-                  className="text-sm font-medium text-blue-400 hover:text-blue-300 underline underline-offset-4"
+              <div className="mb-4 max-w-7xl mx-auto px-4 text-left">
+                <h2
+                  className="text-[48px] leading-[50px] font-normal"
+                  style={{ color: "#404145" }}
                 >
-                  View all jobs
-                </Link>
-              </div>
-              <div className="max-w-4xl mx-auto">
-                <div className="space-y-0 bg-white rounded-lg shadow-md overflow-hidden">
-                  {featuredJobs.map((job) => (
-                    <Link
-                      key={job.id}
-                      href={`/jobseeker/jobs/${job.id}`}
-                      className="block w-full px-6 py-4 hover:bg-gray-50 transition-colors border-b border-gray-200 last:border-b-0"
-                    >
-                      <div className="flex items-start gap-4">
-                        {job.business?.company_logo_url && (
-                          <img
-                            src={job.business.company_logo_url}
-                            alt={job.business.company_name || "Business"}
-                            className="w-12 h-12 object-contain rounded flex-shrink-0"
-                          />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                            {job.title}
-                          </h3>
-                          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                            {job.business?.company_name && (
-                              <span className="font-medium">{job.business.company_name}</span>
-                            )}
-                            {job.location && (
-                              <span className="flex items-center gap-1 text-gray-500">
-                                <MapPin className="h-4 w-4" />
-                                {job.location}
-                              </span>
-                            )}
-                            {job.job_type && (
-                              <span className="flex items-center gap-1 text-gray-500">
-                                <Clock className="h-4 w-4" />
-                                {job.job_type}
-                              </span>
-                            )}
-                            {job.created_at && (
-                              <span className="text-xs text-gray-400">
-                                {formatRelativeTime(job.created_at)}
-                              </span>
-                            )}
-                            {job.salary && (
-                              <span className="text-sm font-medium text-blue-600">
-                                {job.salary}
-                              </span>
-                            )}
+                  Recent Job Posts
+                </h2>
+                <p
+                  className="text-[18px] leading-[24px]"
+                  style={{ color: "#404145" }}
+                >
+                  Hand-picked opportunities from businesses on FastLink
+                </p>
+                          </div>
+              <div className="max-w-4xl mx-auto px-4">
+                <div className="rounded-2xl bg-[#C55E7C] shadow-md">
+                  <div className="p-4 space-y-4 bg-[#C55E7C] rounded-2xl">
+                    {featuredJobs.map((job) => (
+                      <Link
+                        key={job.id}
+                        href={`/jobseeker/jobs/${job.id}`}
+                        className="block w-full px-2 py-2 rounded-lg transition-colors hover:bg-white/10"
+                      >
+                        <div className="flex items-start gap-4">
+                          {job.business?.company_logo_url && (
+                            <img
+                              src={job.business.company_logo_url}
+                              alt={job.business.company_name || "Business"}
+                              className="w-12 h-12 object-contain rounded flex-shrink-0"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0 text-white">
+                            <h3 className="text-lg font-semibold mb-1">
+                              {job.title}
+                            </h3>
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-white/90">
+                              {job.business?.company_name && (
+                                <span className="font-medium">{job.business.company_name}</span>
+                              )}
+                              {job.location && (
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  {job.location}
+                                </span>
+                              )}
+                              {job.job_type && (
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-4 w-4" />
+                                  {job.job_type}
+                                </span>
+                              )}
+                              {job.created_at && (
+                                <span className="text-xs text-white/80">
+                                  {formatRelativeTime(job.created_at)}
+                                </span>
+                              )}
+                              {job.salary && (
+                                <span className="text-sm font-medium text-white">
+                                  {job.salary}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </Link>
-                  ))}
+                      </Link>
+                    ))}
+                    <div className="flex justify-start pt-2">
+                      <Link
+                        href="/jobs"
+                        className="text-sm font-medium text-white underline underline-offset-4 hover:text-white/80"
+                      >
+                        View more jobs
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

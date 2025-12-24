@@ -38,9 +38,15 @@ const RESERVED_ROUTES = [
   "sitemap.xml",
 ];
 
-async function getCompanyPage(slug: string): Promise<CompanyPage | null> {
+async function getCompanyPage(slug: string | undefined): Promise<CompanyPage | null> {
+  if (!slug || typeof slug !== "string") {
+    return null;
+  }
+
+  const normalizedSlug = slug.toLowerCase();
+
   // Check if slug is a reserved route
-  if (RESERVED_ROUTES.includes(slug.toLowerCase())) {
+  if (RESERVED_ROUTES.includes(normalizedSlug)) {
     return null;
   }
 
@@ -48,7 +54,7 @@ async function getCompanyPage(slug: string): Promise<CompanyPage | null> {
     const { data, error } = await supabaseAdmin
       .from("company_pages")
       .select("*")
-      .eq("slug", slug.toLowerCase())
+      .eq("slug", normalizedSlug)
       .eq("is_active", true)
       .single();
 
