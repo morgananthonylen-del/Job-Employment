@@ -3,13 +3,14 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { Zap, Building2, Briefcase, Gavel, FileText, UserCircle, Megaphone, ChevronDown } from "lucide-react";
+import { Zap, Building2, Briefcase, Gavel, FileText, UserCircle, Megaphone, ChevronDown, Menu, X } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   // Mobile menu removed
   const [featuresOpen, setFeaturesOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const featuresRef = useRef<HTMLDivElement | null>(null);
 
   // Close features dropdown on outside click
@@ -27,6 +28,11 @@ export function Navbar() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    // close mobile menu on route change
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   // Hide navbar on register, admin, and authenticated pages (show on login)
   const hideNavbar = 
@@ -51,7 +57,86 @@ export function Navbar() {
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-[9999] shadow-sm">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        {/* Mobile layout */}
+        <div className="md:hidden relative flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <button
+              type="button"
+              aria-label="Open menu"
+              className="flex h-12 w-12 items-center justify-center text-gray-800 hover:text-gray-900"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="h-7 w-7" strokeWidth={3} />
+            </button>
+          </div>
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
+                <Zap className="h-6 w-6" />
+              </div>
+              <span className="text-[24px] leading-[28px] font-bold text-gray-900">FastLink</span>
+            </Link>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center px-3 py-2 rounded-md border border-gray-300 text-sm font-semibold text-gray-800 hover:border-gray-400 hover:text-gray-900"
+            >
+              Join
+            </Link>
+          </div>
+        </div>
+
+        {/* Mobile slide-in drawer */}
+        <div
+          className={`md:hidden fixed inset-0 z-[10000] transition ${
+            mobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"
+          }`}
+        >
+          <div
+            className="absolute inset-0 bg-black/20"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div
+            className={`absolute inset-y-0 left-0 w-72 max-w-[80vw] bg-white shadow-2xl transform transition-transform duration-200 ${
+              mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+          >
+            <div className="px-4 py-3">
+              <Link
+                href="/login"
+                className="block w-full text-center rounded-md bg-black text-white font-semibold py-3"
+              >
+                Join Fastlink
+              </Link>
+            </div>
+            <div className="py-1">
+              <Link href="/jobs" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
+                Job Search
+              </Link>
+              <Link href="/directory" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
+                Business Directory
+              </Link>
+              <Link href="/market-place" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
+                Market Place
+              </Link>
+              <Link href="/quote" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
+                Get Quote
+              </Link>
+              <Link href="/get-listed" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
+                Get Listed
+              </Link>
+              <Link href="/vacancy" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
+                Vacancy
+              </Link>
+              <Link href="/login" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
+                Login
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden md:flex items-center justify-between h-20">
           {/* Left: Logo */}
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">

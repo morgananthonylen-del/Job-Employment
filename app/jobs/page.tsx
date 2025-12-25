@@ -26,6 +26,7 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [pendingJobId, setPendingJobId] = useState<string | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -63,6 +64,19 @@ export default function JobsPage() {
     })
     .slice(0, 20); // Limit to 20 results
 
+  const suggestions = searchQuery.trim()
+    ? jobs
+        .filter((job) => {
+          const term = searchQuery.trim().toLowerCase();
+          return (
+            job.title?.toLowerCase().includes(term) ||
+            job.location?.toLowerCase().includes(term) ||
+            job.business?.company_name?.toLowerCase().includes(term)
+          );
+        })
+        .slice(0, 6)
+    : [];
+
   const handleJobClick = (jobId: string) => {
     if (typeof window === "undefined") return;
 
@@ -78,36 +92,81 @@ export default function JobsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div
+      className="min-h-screen bg-gray-50 text-gray-900"
+      style={{ backgroundColor: "#f3f4f6" }}
+    >
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Briefcase className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-white">Job Search</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Job Search</h1>
           </div>
-          <p className="text-[18px] leading-[24px] text-gray-400 mb-6">
+          <p className="text-[18px] leading-[24px] text-gray-600 mb-6">
             Find your next opportunity
           </p>
 
         {/* Google-style Search Bar */}
         <div className="max-w-5xl mx-auto px-4">
-          <div className="relative">
-            <div className="relative bg-white rounded-full shadow-lg hover:shadow-xl transition-shadow border-2 border-gray-200 focus-within:border-blue-500 overflow-hidden">
-              <div className="flex items-center min-h-[64px]">
-                <div className="pl-6 pr-4 flex-shrink-0">
+          <form
+            className="relative"
+            onSubmit={(event) => {
+              event.preventDefault();
+            }}
+          >
+            <div className="relative bg-white rounded-[999px] shadow-lg hover:shadow-xl transition-shadow border-2 border-gray-200 focus-within:border-blue-500 overflow-hidden">
+              <div className="flex items-center min-h-[64px] px-3 gap-3">
+                <div className="flex-shrink-0 pl-3">
                   <Search className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   type="text"
                   placeholder="Search for jobs..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 pr-4 text-[18px] leading-[24px] font-[280] text-gray-900 placeholder:text-gray-400 bg-transparent border-0 outline-none focus:outline-none min-w-0"
+                  onFocus={() => setShowSuggestions(true)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowSuggestions(false), 120);
+                  }}
+                  className="flex-1 text-[18px] leading-[24px] font-[280] text-gray-900 placeholder:text-gray-400 bg-transparent border-0 outline-none focus:outline-none min-w-0"
                   style={{ fontFamily: "Macan, system-ui, sans-serif", paddingTop: 12, paddingBottom: 12 }}
                 />
+                <button
+                  type="submit"
+                  aria-label="Search"
+                  className="h-12 w-12 bg-[#404145] text-white flex items-center justify-center rounded-md shadow-sm hover:opacity-90 transition flex-shrink-0"
+                >
+                  <Search className="h-5 w-5" />
+                </button>
               </div>
             </div>
-          </div>
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-20 overflow-hidden">
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.id}
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      setSearchQuery(suggestion.title || "");
+                      setShowSuggestions(false);
+                    }}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="text-[16px] text-gray-900 font-semibold truncate">
+                      {suggestion.title || "Untitled job"}
+                    </div>
+                    <div className="text-[16px] text-gray-500 truncate">
+                      {[suggestion.business?.company_name, suggestion.location].filter(Boolean).join(" • ")}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </form>
         </div>
         </div>
 

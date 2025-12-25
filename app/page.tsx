@@ -484,24 +484,37 @@ export default function HomePage() {
             FastLink connects everyday people with local businesses and real job opportunities across Fiji.
             Start with a quick search or browse what's featured today.
           </p>
-          <div className="mt-6 w-full max-w-2xl md:max-w-[70vw]" ref={heroSearchRef} style={{ background: "transparent" }}>
-            <input
-              type="text"
-              placeholder="Search for jobs or businesses..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleCombinedSearch();
-              }}
-              className="w-full px-5 py-5 text-[20px] leading-[26px] font-[280] text-white placeholder:text-[20px] placeholder:leading-[26px] placeholder:text-white/75 bg-transparent rounded-lg shadow-none outline-none border-2 border-white/70"
-              style={{
-                boxShadow:
-                  "0 0 0 1px rgba(255,255,255,0.35), 0 6px 18px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.2)",
-                backdropFilter: "blur(2px)",
-              }}
-            />
+          <form
+            className="mt-6 w-full max-w-2xl md:max-w-[70vw]"
+            ref={heroSearchRef}
+            style={{ background: "transparent" }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleCombinedSearch();
+            }}
+          >
+            <div className="relative">
+              <div className="flex items-center bg-white rounded-xl shadow-lg border border-gray-200">
+                <input
+                  type="text"
+                  placeholder="Search for jobs or businesses..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleCombinedSearch();
+                  }}
+                  className="flex-1 px-4 py-4 text-[18px] leading-[24px] font-[400] text-gray-900 placeholder:text-gray-500 bg-white border-0 outline-none min-w-0"
+                />
+                <button
+                  type="submit"
+                  aria-label="Search"
+                  className="mr-3 h-11 w-11 rounded-md bg-[#404145] text-white flex items-center justify-center shadow-sm hover:opacity-90 transition flex-shrink-0"
+                >
+                  <Search className="h-5 w-5" />
+                </button>
+              </div>
             {showHeroSuggestions && heroSuggestions.length > 0 && (
-              <div className="mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-64 overflow-auto">
+              <div className="absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-64 overflow-auto z-20">
                 {heroSuggestions.map((business, index) => (
                   <button
                     key={business.id}
@@ -513,16 +526,24 @@ export default function HomePage() {
                       handleCombinedSearch();
                     }}
                     onMouseEnter={() => setHeroSelectedIndex(index)}
-                    className={`w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 ${
+                    className={`w-full text-left px-4 py-3 text-[16px] leading-[22px] text-gray-900 hover:bg-gray-50 ${
                       heroSelectedIndex === index ? "bg-gray-50" : "bg-white"
                     }`}
                   >
-                    {business.company_name}
+                    <div className="text-[16px] text-gray-900 font-semibold truncate">
+                      {business.company_name}
+                    </div>
+                    {business.slug && (
+                      <div className="text-[16px] text-gray-500 truncate">
+                        {business.slug}
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
             )}
-          </div>
+            </div>
+          </form>
           <div className="mt-4">
             <div className="flex items-center gap-3 flex-wrap">
               <button

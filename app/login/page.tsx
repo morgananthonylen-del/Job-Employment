@@ -8,7 +8,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   return (
-    <div className="h-[calc(100vh-4rem)] bg-black flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="flex-1 flex items-center">
         <div className="w-full max-w-4xl mx-auto px-4 py-2">
           <div className="mb-3 text-center">
