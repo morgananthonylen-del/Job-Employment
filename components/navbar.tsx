@@ -190,7 +190,7 @@ export function Navbar() {
                   <ChevronDown className="h-4 w-4" />
                 </button>
                 <div
-                  className={`absolute left-0 mt-2 w-48 rounded-md border border-gray-200 bg-white shadow-lg z-50 transform origin-top transition-all duration-200 ${
+                  className={`absolute left-0 mt-2 w-[420px] rounded-md border border-gray-200 bg-white shadow-lg z-50 transform origin-top transition-all duration-200 ${
                     featuresOpen
                       ? "opacity-100 scale-y-100 translate-y-0"
                       : "opacity-0 scale-y-95 -translate-y-1 pointer-events-none"
@@ -199,7 +199,7 @@ export function Navbar() {
                   <Link
                     href="/market-place"
                     onClick={() => setFeaturesOpen(false)}
-                    className={`flex items-center gap-2 px-4 py-2 text-[15px] font-[600] transition-colors ${
+                    className={`flex items-center gap-3 px-5 py-3 text-[15px] font-[600] transition-colors ${
                       isMarketPlace ? "text-blue-600 bg-blue-50" : "text-gray-700 hover:bg-gray-50"
                     }`}
                   >
@@ -209,17 +209,22 @@ export function Navbar() {
                   <Link
                     href="/quote"
                     onClick={() => setFeaturesOpen(false)}
-                    className={`flex items-center gap-2 px-4 py-2 text-[15px] font-[600] transition-colors ${
+                    className={`flex items-center gap-3 px-5 py-3 text-[15px] font-[600] transition-colors ${
                       isQuote ? "text-blue-600 bg-blue-50" : "text-gray-700 hover:bg-gray-50"
                     }`}
                   >
                     <FileText className="h-4 w-4" />
-                    Get Quote
+                    <span className="flex items-center gap-2">
+                      <span>Get Quote</span>
+                      <span className="inline-flex items-center rounded-md bg-blue-600 px-2 py-[2px] text-[11px] font-semibold text-white">
+                        Fastlink User
+                      </span>
+                    </span>
                   </Link>
                   <Link
                     href="/shoutouts"
                     onClick={() => setFeaturesOpen(false)}
-                    className={`flex items-center gap-2 px-4 py-2 text-[15px] font-[600] transition-colors ${
+                    className={`flex items-center gap-3 px-5 py-3 text-[15px] font-[600] transition-colors ${
                       isShoutouts ? "text-blue-600 bg-blue-50" : "text-gray-700 hover:bg-gray-50"
                     }`}
                   >

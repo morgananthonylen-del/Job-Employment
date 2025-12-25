@@ -137,14 +137,14 @@ export default function JobsPage() {
                 <button
                   type="submit"
                   aria-label="Search"
-                  className="h-12 w-12 bg-[#404145] text-white flex items-center justify-center rounded-md shadow-sm hover:opacity-90 transition flex-shrink-0"
+                  className="h-12 w-12 bg-[#404145] text-white flex items-center justify-center rounded-full shadow-sm hover:opacity-90 transition flex-shrink-0"
                 >
                   <Search className="h-5 w-5" />
                 </button>
               </div>
             </div>
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-20 overflow-hidden">
+              <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-30 overflow-hidden">
                 {suggestions.map((suggestion) => (
                   <button
                     key={suggestion.id}

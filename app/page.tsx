@@ -514,7 +514,7 @@ export default function HomePage() {
                 </button>
               </div>
             {showHeroSuggestions && heroSuggestions.length > 0 && (
-              <div className="absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-64 overflow-auto z-20">
+              <div className="absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl border border-gray-200 max-h-64 overflow-auto z-30">
                 {heroSuggestions.map((business, index) => (
                   <button
                     key={business.id}
@@ -656,12 +656,15 @@ export default function HomePage() {
           {/* Featured Businesses (above Recent Job Posts) */}
           <div className="mb-16">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-[38px] leading-[42px]" style={{ color: "#404145", fontFamily: "Michroma, sans-serif", marginTop: "10px" }}>
+              <div
+                className="flex flex-wrap items-center gap-2 text-[24px] leading-[28px] md:text-[38px] md:leading-[42px]"
+                style={{ color: "#404145", fontFamily: "Michroma, sans-serif", marginTop: "10px" }}
+              >
                 <span>Businesses On FastLink</span>
                 <span aria-hidden="true" className="text-gray-700">→</span>
                 <Link
                   href="/register"
-                  className="inline-flex items-center gap-1 text-[38px] leading-[42px] font-medium text-blue-500 hover:text-blue-600"
+                  className="inline-flex items-center gap-1 text-[24px] leading-[28px] md:text-[38px] md:leading-[42px] font-medium text-blue-500 hover:text-blue-600"
                 >
                   <span>Signup Today - It's Free!</span>
                 </Link>
@@ -671,37 +674,42 @@ export default function HomePage() {
               <div className="text-sm text-red-600">{businessesError}</div>
             ) : featuredBusinesses.length > 0 || allBusinesses.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {(featuredBusinesses.length > 0 ? featuredBusinesses : allBusinesses).map((business) => (
-                  <Link
-                    key={business.id}
-                    href={`/${business.slug}`}
-                    className="group bg-white rounded-lg border border-gray-200 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-[0_12px_28px_rgba(37,99,235,0.28)] hover:bg-blue-50/30"
-                  >
-                    <div className="flex flex-col items-center text-center">
-                      {business.company_logo_url ? (
-                        <div className="w-20 h-20 mb-3 flex items-center justify-center">
-                          <img
-                            src={business.company_logo_url}
-                            alt={business.company_name}
-                            className="max-w-full max-h-full object-contain transition-transform duration-200 group-hover:scale-105"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-20 h-20 mb-3 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <Building2 className="h-10 w-10 text-gray-400" />
-                        </div>
-                      )}
-                      <h3 className="text-[16px] font-semibold text-gray-900">
-                        {business.company_name}
-                      </h3>
-                      {business.company_description && (
-                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                          {business.company_description}
-                        </p>
-                      )}
+                {(featuredBusinesses.length > 0 ? featuredBusinesses : allBusinesses).map((business) => {
+                  const slugSource = (business.slug || business.company_name || "").toString().trim();
+                  if (!slugSource) return null;
+                  const safeSlug = encodeURIComponent(slugSource.toLowerCase());
+                  return (
+                    <Link
+                      key={business.id}
+                      href={`/${safeSlug}`}
+                      className="group bg-white rounded-lg border border-gray-200 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-[0_12px_28px_rgba(37,99,235,0.28)] hover:bg-blue-50/30"
+                    >
+                      <div className="flex flex-col items-center text-center">
+                        {business.company_logo_url ? (
+                          <div className="w-20 h-20 mb-3 flex items-center justify-center">
+                            <img
+                              src={business.company_logo_url}
+                              alt={business.company_name}
+                              className="max-w-full max-h-full object-contain transition-transform duration-200 group-hover:scale-105"
+                            />
                           </div>
-                  </Link>
-                ))}
+                        ) : (
+                          <div className="w-20 h-20 mb-3 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <Building2 className="h-10 w-10 text-gray-400" />
+                          </div>
+                        )}
+                        <h3 className="text-[16px] font-semibold text-gray-900">
+                          {business.company_name}
+                        </h3>
+                        {business.company_description && (
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                            {business.company_description}
+                          </p>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             ) : (
               <div className="text-gray-600 text-sm">No businesses found.</div>

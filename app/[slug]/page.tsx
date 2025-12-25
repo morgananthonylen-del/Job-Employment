@@ -43,7 +43,10 @@ async function getCompanyPage(slug: string | undefined): Promise<CompanyPage | n
     return null;
   }
 
-  const normalizedSlug = slug.toLowerCase();
+  const normalizedSlug = slug.toLowerCase().trim();
+  const slugWithSpaces = normalizedSlug.replace(/-/g, " ");
+  const slugWithUnderscores = normalizedSlug.replace(/-/g, "_");
+  const patterns = [normalizedSlug, slugWithSpaces, slugWithUnderscores].filter(Boolean);
 
   // Check if slug is a reserved route
   if (RESERVED_ROUTES.includes(normalizedSlug)) {
@@ -51,15 +54,48 @@ async function getCompanyPage(slug: string | undefined): Promise<CompanyPage | n
   }
 
   try {
-    const { data, error } = await supabaseAdmin
-      .from("company_pages")
-      .select("*")
-      .eq("slug", normalizedSlug)
-      .eq("is_active", true)
-      .single();
+    const tryFetch = async (activeOnly = true) => {
+      for (const pattern of patterns) {
+        // exact-ish match on slug OR company_name
+        const query = supabaseAdmin
+          .from("company_pages")
+          .select("*")
+          .or(
+            `slug.ilike.${pattern},company_name.ilike.${pattern}`
+          )
+          .limit(1);
+        if (activeOnly) query.eq("is_active", true);
+        const { data, error } = await query.single();
+        if (!error && data) return data as CompanyPage;
+      }
 
-    if (error || !data) return null;
-    return data;
+      // fuzzy match with wildcards
+      for (const pattern of patterns) {
+        const fuzzy = `%${pattern}%`;
+        const query = supabaseAdmin
+          .from("company_pages")
+          .select("*")
+          .or(
+            `slug.ilike.${fuzzy},company_name.ilike.${fuzzy}`
+          )
+          .limit(1);
+        if (activeOnly) query.eq("is_active", true);
+        const { data, error } = await query.single();
+        if (!error && data) return data as CompanyPage;
+      }
+
+      return null;
+    };
+
+    // Active only first
+    const activeHit = await tryFetch(true);
+    if (activeHit) return activeHit;
+
+    // Then include inactive
+    const anyHit = await tryFetch(false);
+    if (anyHit) return anyHit;
+
+    return null;
   } catch (error) {
     console.error("Error fetching company page:", error);
     return null;
