@@ -494,7 +494,7 @@ export default function HomePage() {
             }}
           >
             <div className="relative">
-              <div className="flex items-center bg-white rounded-xl shadow-lg border border-gray-200">
+              <div className="flex items-center bg-white rounded-full shadow-lg border border-gray-200 overflow-hidden">
                 <input
                   type="text"
                   placeholder="Search for jobs or businesses..."
@@ -504,11 +504,12 @@ export default function HomePage() {
                     if (e.key === "Enter") handleCombinedSearch();
                   }}
                   className="flex-1 px-4 py-4 text-[18px] leading-[24px] font-[400] text-gray-900 placeholder:text-gray-500 bg-white border-0 outline-none min-w-0"
+                  style={{ paddingLeft: "20px" }}
                 />
                 <button
                   type="submit"
                   aria-label="Search"
-                  className="mr-3 h-11 w-11 rounded-md bg-[#404145] text-white flex items-center justify-center shadow-sm hover:opacity-90 transition flex-shrink-0"
+                  className="mr-2 h-11 w-11 rounded-full bg-[#404145] text-white flex items-center justify-center shadow-sm hover:opacity-90 transition flex-shrink-0"
                 >
                   <Search className="h-5 w-5" />
                 </button>
