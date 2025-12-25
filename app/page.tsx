@@ -66,7 +66,7 @@ export default function HomePage() {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const searchInputRef = useRef<HTMLDivElement>(null);
-  const heroSearchRef = useRef<HTMLDivElement>(null);
+  const heroSearchRef = useRef<HTMLFormElement>(null);
 
   const categories = [
     { name: "Surveyors", searchTerm: "surveyor" },
