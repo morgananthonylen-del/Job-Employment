@@ -62,43 +62,41 @@ async function getCompanyPage(slug: string | undefined): Promise<CompanyPage | n
     const tryFetch = async (activeOnly = true) => {
       for (const pattern of patterns) {
         // exact-ish match on slug OR company_name
-        const query = supabaseAdmin
+        let query = supabaseAdmin
           .from("company_pages")
           .select("*")
-          .or(
-            `slug.ilike.${pattern},company_name.ilike.${pattern}`
-          )
-          .limit(1)
-          .maybeSingle();
-        if (activeOnly) query.eq("is_active", true);
-        const { data, error } = await query;
+          .or(`slug.ilike.${pattern},company_name.ilike.${pattern}`);
+        if (activeOnly) {
+          query = query.eq("is_active", true);
+        }
+        const { data, error } = await query.limit(1).maybeSingle();
         if (!error && data) return data as CompanyPage;
       }
 
       // fuzzy match with wildcards
       for (const pattern of patterns) {
         const fuzzy = `%${pattern}%`;
-        const query = supabaseAdmin
+        let query = supabaseAdmin
           .from("company_pages")
           .select("*")
-          .or(
-            `slug.ilike.${fuzzy},company_name.ilike.${fuzzy}`
-          )
-          .limit(1)
-          .maybeSingle();
-        if (activeOnly) query.eq("is_active", true);
-        const { data, error } = await query;
+          .or(`slug.ilike.${fuzzy},company_name.ilike.${fuzzy}`);
+        if (activeOnly) {
+          query = query.eq("is_active", true);
+        }
+        const { data, error } = await query.limit(1).maybeSingle();
         if (!error && data) return data as CompanyPage;
       }
 
       // token AND match on company_name (all tokens must appear)
       if (tokens.length) {
-        const query = supabaseAdmin.from("company_pages").select("*").limit(1).maybeSingle();
-        if (activeOnly) query.eq("is_active", true);
+        let query = supabaseAdmin.from("company_pages").select("*");
+        if (activeOnly) {
+          query = query.eq("is_active", true);
+        }
         tokens.forEach((t) => {
-          query.ilike("company_name", `%${t}%`);
+          query = query.ilike("company_name", `%${t}%`);
         });
-        const { data, error } = await query;
+        const { data, error } = await query.limit(1).maybeSingle();
         if (!error && data) return data as CompanyPage;
       }
 

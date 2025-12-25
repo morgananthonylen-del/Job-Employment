@@ -730,7 +730,7 @@ export default function HomePage() {
                         Hand-picked opportunities from businesses on FastLink
                       </p>
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-4 rounded-xl bg-[#BE5271] p-3">
                       {featuredJobs.map((job) => (
                         <Link
                           key={job.id}
@@ -780,14 +780,6 @@ export default function HomePage() {
                           </div>
                         </Link>
                       ))}
-                      <div className="flex justify-start pt-2">
-                        <Link
-                          href="/jobs"
-                          className="text-sm font-medium text-white underline underline-offset-4 hover:text-white/80"
-                        >
-                          View more jobs
-                        </Link>
-                      </div>
                     </div>
                   </div>
                 </div>
