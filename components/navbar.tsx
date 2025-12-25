@@ -90,11 +90,14 @@ export function Navbar() {
         {/* Mobile slide-in drawer */}
         <div
           className={`md:hidden fixed inset-0 z-[10000] transition ${
-            mobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"
+            mobileMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
           }`}
+          style={{ transitionProperty: "opacity" }}
         >
           <div
-            className="absolute inset-0 bg-black/20"
+            className={`absolute inset-0 bg-black/20 transition-opacity duration-200 ${
+              mobileMenuOpen ? "opacity-100" : "opacity-0"
+            }`}
             onClick={() => setMobileMenuOpen(false)}
           />
           <div

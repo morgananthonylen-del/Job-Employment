@@ -41,6 +41,13 @@ body {
   background: #f3f4f6 !important;
 }
 
+@media (max-width: 768px) {
+  body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+  }
+}
+
 body.dark {
   background-color: hsl(222.2, 84%, 4.9%) !important;
   background: hsl(222.2, 84%, 4.9%) !important;

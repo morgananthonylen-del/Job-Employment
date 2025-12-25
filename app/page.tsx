@@ -469,7 +469,7 @@ export default function HomePage() {
               </div>
             ))
           ) : (
-            <div className="w-full h-full bg-gray-300" />
+            <div className="w-full h-full bg-white" />
           )}
         </div>
 
@@ -478,7 +478,7 @@ export default function HomePage() {
           style={{ background: "transparent" }}
         >
           <h1 className="text-4xl md:text-6xl font-bold leading-tight text-white" style={{ background: "transparent" }}>
-            Find work. Find businesses.
+            Find work. Connect with businesses.
           </h1>
           <p className="mt-4 text-lg md:text-xl text-white max-w-2xl" style={{ background: "transparent" }}>
             FastLink connects everyday people with local businesses and real job opportunities across Fiji.
