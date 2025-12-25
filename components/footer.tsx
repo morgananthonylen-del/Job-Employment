@@ -43,6 +43,11 @@ export function Footer() {
           </a>
           .
         </p>
+        <div className="mt-2 text-sm text-gray-600">
+          <a href="/vacancy" className="text-blue-600 hover:text-blue-800">
+            Vacancy
+          </a>
+        </div>
       </div>
     </footer>
   );

@@ -114,23 +114,17 @@ export function Navbar() {
               </Link>
             </div>
             <div className="py-1">
-              <Link href="/jobs" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
-                Job Search
-              </Link>
-              <Link href="/directory" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
-                Business Directory
-              </Link>
               <Link href="/market-place" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
                 Market Place
               </Link>
               <Link href="/quote" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
                 Get Quote
               </Link>
+              <Link href="/updates" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
+                Updates (Blog)
+              </Link>
               <Link href="/get-listed" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
                 Get Listed
-              </Link>
-              <Link href="/vacancy" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
-                Vacancy
               </Link>
               <Link href="/login" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
                 Login
@@ -154,30 +148,6 @@ export function Navbar() {
           <div className="hidden md:flex items-center justify-between flex-1 ml-8 relative">
             {/* Left side options */}
             <div className="flex items-center gap-1 text-[16px] leading-[34px] font-[700]">
-              <Link
-                href="/jobs"
-                className={`relative flex items-center gap-2 px-4 py-2 font-[700] leading-[34px] transition-colors ${
-                  isJobs ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <Briefcase className="h-4 w-4" />
-                Job Search
-                {isJobs && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
-                )}
-              </Link>
-              <Link
-                href="/directory"
-                className={`relative flex items-center gap-2 px-4 py-2 font-[700] leading-[34px] transition-colors ${
-                  isDirectory ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                <Building2 className="h-4 w-4" />
-                Business Directory
-                {isDirectory && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-blue-600 rounded-t-full" />
-                )}
-              </Link>
               <div className="relative" ref={featuresRef}>
                 <button
                   type="button"
@@ -243,13 +213,13 @@ export function Navbar() {
                 Get Listed
               </Link>
               <Link
-                href="/vacancy"
+                href="/updates"
                 className={`relative flex items-center gap-2 px-4 py-2 font-[700] leading-[34px] transition-colors ${
-                  pathname === "/vacancy" ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
+                  pathname === "/updates" ? "text-blue-600" : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                <Briefcase className="h-4 w-4" />
-                Vacancy
+                <FileText className="h-4 w-4" />
+                Updates
               </Link>
             </div>
 

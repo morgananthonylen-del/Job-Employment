@@ -4,6 +4,10 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { Building2, Mail, Phone, MapPin, Globe, Code } from "lucide-react";
 import { AdsenseAd } from "@/components/adsense-ad";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const dynamicParams = true;
+
 interface CompanyPage {
   id: string;
   company_name: string;
@@ -44,8 +48,9 @@ async function getCompanyPage(slug: string | undefined): Promise<CompanyPage | n
   }
 
   const normalizedSlug = slug.toLowerCase().trim();
-  const slugWithSpaces = normalizedSlug.replace(/-/g, " ");
-  const slugWithUnderscores = normalizedSlug.replace(/-/g, "_");
+  const slugWithSpaces = normalizedSlug.replace(/-/g, " ").trim();
+  const slugWithUnderscores = normalizedSlug.replace(/-/g, "_").trim();
+  const tokens = normalizedSlug.split(/[-_\s]+/).filter(Boolean);
   const patterns = [normalizedSlug, slugWithSpaces, slugWithUnderscores].filter(Boolean);
 
   // Check if slug is a reserved route
@@ -63,9 +68,10 @@ async function getCompanyPage(slug: string | undefined): Promise<CompanyPage | n
           .or(
             `slug.ilike.${pattern},company_name.ilike.${pattern}`
           )
-          .limit(1);
+          .limit(1)
+          .maybeSingle();
         if (activeOnly) query.eq("is_active", true);
-        const { data, error } = await query.single();
+        const { data, error } = await query;
         if (!error && data) return data as CompanyPage;
       }
 
@@ -78,9 +84,21 @@ async function getCompanyPage(slug: string | undefined): Promise<CompanyPage | n
           .or(
             `slug.ilike.${fuzzy},company_name.ilike.${fuzzy}`
           )
-          .limit(1);
+          .limit(1)
+          .maybeSingle();
         if (activeOnly) query.eq("is_active", true);
-        const { data, error } = await query.single();
+        const { data, error } = await query;
+        if (!error && data) return data as CompanyPage;
+      }
+
+      // token AND match on company_name (all tokens must appear)
+      if (tokens.length) {
+        const query = supabaseAdmin.from("company_pages").select("*").limit(1).maybeSingle();
+        if (activeOnly) query.eq("is_active", true);
+        tokens.forEach((t) => {
+          query.ilike("company_name", `%${t}%`);
+        });
+        const { data, error } = await query;
         if (!error && data) return data as CompanyPage;
       }
 
