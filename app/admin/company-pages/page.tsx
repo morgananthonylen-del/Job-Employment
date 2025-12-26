@@ -56,6 +56,8 @@ export default function AdminCompanyPagesPage() {
     is_featured: false,
   });
 
+  const logoPreview = formData.company_logo_url || editingPage?.company_logo_url || "";
+
   useEffect(() => {
     fetchCompanyPages();
   }, []);
@@ -80,21 +82,76 @@ export default function AdminCompanyPagesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const normalizedSlug = normalizeSlug(formData.slug || formData.company_name);
+      if (!formData.company_name.trim() || !normalizedSlug) {
+        toast({
+          title: "Missing info",
+          description: "Company name and a valid slug are required.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      let safeLogo = formData.company_logo_url;
+      if (safeLogo?.startsWith("data:")) {
+        const base64 = safeLogo.split(",")[1] || "";
+        const bytes = Math.ceil((base64.length * 3) / 4); // approximate byte size
+        const maxBytes = 250 * 1024; // keep well under Next.js body limit (~1MB)
+        if (bytes > maxBytes) {
+          toast({
+            title: "Logo too large",
+            description: "Please upload a smaller logo (under ~250KB) or paste a hosted logo URL.",
+            variant: "destructive",
+          });
+          safeLogo = "";
+          setLogoFileName("");
+        }
+      }
+
+      const payload = {
+        ...formData,
+        company_name: formData.company_name.trim(),
+        slug: normalizedSlug,
+        company_logo_url: safeLogo,
+      };
+
       const url = editingPage
         ? `/api/admin/company-pages/${editingPage.id}`
         : "/api/admin/company-pages";
       const method = editingPage ? "PUT" : "POST";
 
+      console.log("Saving business page:", { url, method, payload: { ...payload, company_logo_url: payload.company_logo_url?.substring(0, 50) + "..." } });
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
+      console.log("Response status:", response.status, response.statusText);
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to save company page");
+        let message = "Failed to save company page";
+        try {
+          const errorJson = await response.json();
+          console.error("Error response:", errorJson);
+          if (errorJson?.error) {
+            message = errorJson.error;
+          }
+        } catch {
+          try {
+            const errorText = await response.text();
+            console.error("Error text:", errorText);
+            if (errorText) message = errorText;
+          } catch {
+            // ignore
+          }
+        }
+        throw new Error(message);
       }
+
+      const result = await response.json();
+      console.log("Save successful:", result);
 
       toast({
         title: "Success",
@@ -189,11 +246,21 @@ export default function AdminCompanyPagesPage() {
       .replace(/(^-|-$)/g, "");
   };
 
+  const normalizeSlug = (value: string) =>
+    value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
   const handleCompanyNameChange = (value: string) => {
-    setFormData({ ...formData, company_name: value });
-    if (!editingPage && !formData.slug) {
-      setFormData((prev) => ({ ...prev, slug: generateSlug(value) }));
-    }
+    const trimmed = value.trim();
+    const nextSlug = !editingPage && !formData.slug ? generateSlug(trimmed) : formData.slug;
+    setFormData((prev) => ({
+      ...prev,
+      company_name: trimmed,
+      slug: nextSlug ? normalizeSlug(nextSlug) : "",
+    }));
   };
 
   const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -257,7 +324,13 @@ export default function AdminCompanyPagesPage() {
                 <Input
                   id="slug"
                   value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase() })}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    setFormData({
+                      ...formData,
+                      slug: normalizeSlug(raw),
+                    });
+                  }}
                   required
                   placeholder="acme-corporation"
                 />
@@ -325,9 +398,9 @@ export default function AdminCompanyPagesPage() {
                 <Label htmlFor="company_logo_url">Logo</Label>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-3">
-                    {formData.company_logo_url ? (
+                    {logoPreview ? (
                       <img
-                        src={formData.company_logo_url}
+                        src={logoPreview}
                         alt="Logo preview"
                         className="h-12 w-12 object-contain border rounded"
                       />
@@ -436,7 +509,7 @@ export default function AdminCompanyPagesPage() {
                   onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
                   className="rounded"
                 />
-                <Label htmlFor="is_featured">Featured (showcase on home page)</Label>
+                <Label htmlFor="is_featured">Featured (display in "Businesses On FastLink" cards on homepage)</Label>
               </div>
             </div>
 
@@ -486,7 +559,15 @@ export default function AdminCompanyPagesPage() {
                     <tr key={page.id} className="border-b hover:bg-gray-50">
                       <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-gray-400" />
+                          {page.company_logo_url ? (
+                            <img
+                              src={page.company_logo_url}
+                              alt={page.company_name}
+                              className="h-10 w-10 object-contain rounded border"
+                            />
+                          ) : (
+                            <Building2 className="h-5 w-5 text-gray-400" />
+                          )}
                           <span className="font-medium">{page.company_name}</span>
                         </div>
                       </td>

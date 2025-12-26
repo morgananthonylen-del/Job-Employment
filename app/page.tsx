@@ -655,7 +655,7 @@ export default function HomePage() {
 
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Featured Businesses (above Recent Job Posts) */}
-          <div className="mb-16">
+          <div className="mb-16 px-5 max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-4">
               <div
                 className="flex flex-wrap items-center gap-2 text-[24px] leading-[28px] md:text-[38px] md:leading-[42px]"
@@ -673,7 +673,7 @@ export default function HomePage() {
             </div>
             {businessesError ? (
               <div className="text-sm text-red-600">{businessesError}</div>
-            ) : featuredBusinesses.length > 0 || allBusinesses.length > 0 ? (
+            ) : (featuredBusinesses.length > 0 || allBusinesses.length > 0) ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {(featuredBusinesses.length > 0 ? featuredBusinesses : allBusinesses).map((business) => {
                   const slugSource = (business.slug || business.company_name || "").toString().trim();
@@ -720,67 +720,79 @@ export default function HomePage() {
           {/* Recent Job Posts */}
           {featuredJobs.length > 0 && (
             <div className="mb-12">
-              <div className="w-full mx-[10px]">
+              <div className="w-full px-5">
                 <div className="rounded-2xl bg-[#C55E7C] shadow-md py-[30px]">
                   <div className="p-5 bg-[#C55E7C] rounded-2xl grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="space-y-2 text-white">
-                      <h2 className="text-[48px] leading-[50px] font-normal">
-                        Recent Job Posts
-                      </h2>
-                      <p className="text-[18px] leading-[24px] text-white/90">
-                        Hand-picked opportunities from businesses on FastLink
+                    <div className="space-y-4 text-white flex flex-col justify-center">
+                      <p className="text-[36px] leading-[44px] font-normal">
+                        Are you looking for work?
                       </p>
+                      <Link
+                        href="/login"
+                        className="inline-flex items-center justify-center px-6 py-3 bg-white text-[#C55E7C] font-semibold rounded-lg hover:bg-gray-100 transition-colors w-fit"
+                      >
+                        Apply now
+                      </Link>
                     </div>
-                    <div className="space-y-4 rounded-xl bg-[#BE5271] p-3">
-                      {featuredJobs.map((job) => (
-                        <Link
-                          key={job.id}
-                          href={`/jobseeker/jobs/${job.id}`}
-                          className="block w-full px-2 py-2 rounded-lg transition-colors hover:bg-white/10"
-                        >
-                          <div className="flex items-start gap-4">
-                            {job.business?.company_logo_url && (
-                              <img
-                                src={job.business.company_logo_url}
-                                alt={job.business.company_name || "Business"}
-                                className="w-12 h-12 object-contain rounded flex-shrink-0"
-                              />
-                            )}
-                            <div className="flex-1 min-w-0 text-white">
-                              <h3 className="text-lg font-semibold mb-1">
-                                {job.title}
-                              </h3>
-                              <div className="flex flex-wrap items-center gap-3 text-sm text-white/90">
-                                {job.business?.company_name && (
-                                  <span className="font-medium">{job.business.company_name}</span>
-                                )}
-                                {job.location && (
-                                  <span className="flex items-center gap-1">
-                                    <MapPin className="h-4 w-4" />
-                                    {job.location}
-                                  </span>
-                                )}
-                                {job.job_type && (
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="h-4 w-4" />
-                                    {job.job_type}
-                                  </span>
-                                )}
-                                {job.created_at && (
-                                  <span className="text-xs text-white/80">
-                                    {formatRelativeTime(job.created_at)}
-                                  </span>
-                                )}
-                                {job.salary && (
-                                  <span className="text-sm font-medium text-white">
-                                    {job.salary}
-                                  </span>
-                                )}
+                    <div className="space-y-4">
+                      <div className="mb-4">
+                        <h2 className="text-[38px] leading-[46px] font-normal text-white">
+                          Recent Job Posts
+                        </h2>
+                        <p className="text-[18px] leading-[24px] text-white/90">
+                          Hand-picked opportunities from businesses on FastLink
+                        </p>
+                      </div>
+                      <div className="space-y-4 rounded-xl bg-[#BE5271] p-3">
+                        {featuredJobs.map((job) => (
+                          <div
+                            key={job.id}
+                            className="block w-full px-2 py-2 rounded-lg"
+                          >
+                            <div className="flex items-start gap-4">
+                              {job.business?.company_logo_url && (
+                                <img
+                                  src={job.business.company_logo_url}
+                                  alt={job.business.company_name || "Business"}
+                                  className="w-12 h-12 object-contain rounded flex-shrink-0"
+                                />
+                              )}
+                              <div className="flex-1 min-w-0 text-white">
+                                <h3 className="text-lg font-semibold mb-1">
+                                  {job.title}
+                                </h3>
+                                <div className="flex flex-wrap items-center gap-3 text-sm text-white/90">
+                                  {job.business?.company_name && (
+                                    <span className="font-medium">{job.business.company_name}</span>
+                                  )}
+                                  {job.location && (
+                                    <span className="flex items-center gap-1">
+                                      <MapPin className="h-4 w-4" />
+                                      {job.location}
+                                    </span>
+                                  )}
+                                  {job.job_type && (
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="h-4 w-4" />
+                                      {job.job_type}
+                                    </span>
+                                  )}
+                                  {job.created_at && (
+                                    <span className="text-xs text-white/80">
+                                      {formatRelativeTime(job.created_at)}
+                                    </span>
+                                  )}
+                                  {job.salary && (
+                                    <span className="text-sm font-medium text-white">
+                                      {job.salary}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </Link>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
