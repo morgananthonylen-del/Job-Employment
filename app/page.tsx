@@ -618,15 +618,20 @@ export default function HomePage() {
                   opacity: 1
                 }}
               >
-                {heroSuggestions.map((business, index) => (
+                {heroSuggestions.map((business, index) => {
+                  const slugSource = (business.slug || business.company_name || "").toString().trim();
+                  const safeSlug = slugSource ? encodeURIComponent(slugSource.toLowerCase()) : "";
+                  
+                  return (
                   <button
                     key={business.id}
                     type="button"
                     onClick={() => {
-                      setSearchQuery(business.company_name || "");
                       setShowHeroSuggestions(false);
                       setHeroSelectedIndex(-1);
-                      handleCombinedSearch();
+                      if (safeSlug) {
+                        router.push(`/${safeSlug}`);
+                      }
                     }}
                     onMouseEnter={() => setHeroSelectedIndex(index)}
                     className="w-full text-left px-4 py-3 text-[16px] leading-[22px] text-gray-900"
@@ -639,13 +644,9 @@ export default function HomePage() {
                     <div className="text-[16px] text-gray-900 font-semibold truncate">
                       {business.company_name}
                     </div>
-                    {business.slug && (
-                      <div className="text-[16px] text-gray-500 truncate">
-                        {business.slug}
-                      </div>
-                    )}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             )}
             </div>
