@@ -764,7 +764,7 @@ export default function HomePage() {
           <div className="mb-16 px-5 max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-4">
               <div
-                className="flex flex-wrap items-center gap-2 text-[24px] leading-[28px] md:text-[38px] md:leading-[42px]"
+                className="flex flex-wrap items-center gap-2 text-[24px] leading-[28px] md:text-[38px] md:leading-[42px] font-[700]"
                 style={{ color: "#404145", fontFamily: "Michroma, sans-serif", marginTop: "10px" }}
               >
                 <span>Businesses On FastLink</span>
