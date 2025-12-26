@@ -126,12 +126,16 @@ export async function DELETE(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const path = searchParams.get("path");
+    const mediaType = searchParams.get("mediaType") || "image";
 
     if (!path) {
       return NextResponse.json({ message: "Path is required" }, { status: 400 });
     }
 
-    const { error } = await supabaseAdmin.storage.from(BUCKET).remove([path]);
+    // Determine bucket based on media type or file extension
+    const bucket = mediaType === "video" ? VIDEO_BUCKET : IMAGE_BUCKET;
+    
+    const { error } = await supabaseAdmin.storage.from(bucket).remove([path]);
 
     if (error) {
       console.error("Supabase delete error:", error);
