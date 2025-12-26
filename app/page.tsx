@@ -675,7 +675,7 @@ export default function HomePage() {
               <div className="text-sm text-red-600">{businessesError}</div>
             ) : (featuredBusinesses.length > 0 || allBusinesses.length > 0) ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {(featuredBusinesses.length > 0 ? featuredBusinesses : allBusinesses).map((business) => {
+                {(featuredBusinesses.length > 0 ? featuredBusinesses : allBusinesses).map((business, index) => {
                   const slugSource = (business.slug || business.company_name || "").toString().trim();
                   if (!slugSource) return null;
                   const safeSlug = encodeURIComponent(slugSource.toLowerCase());
@@ -683,7 +683,7 @@ export default function HomePage() {
                     <Link
                       key={business.id}
                       href={`/${safeSlug}`}
-                      className="group bg-white rounded-lg border border-gray-200 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-[0_12px_28px_rgba(37,99,235,0.28)] hover:bg-blue-50/30"
+                      className={`group bg-white rounded-lg border border-gray-200 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-[0_12px_28px_rgba(37,99,235,0.28)] hover:bg-blue-50/30 ${index >= 4 ? 'hidden md:block' : ''}`}
                     >
                       <div className="flex flex-col items-center text-center">
                         {business.company_logo_url ? (
@@ -723,7 +723,7 @@ export default function HomePage() {
               <div className="w-full px-5">
                 <div className="rounded-2xl bg-[#C55E7C] shadow-md py-[30px]">
                   <div className="p-5 bg-[#C55E7C] rounded-2xl grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="space-y-4 text-white flex flex-col justify-center">
+                    <div className="space-y-4 text-white flex flex-col justify-center items-center text-center">
                       <p className="text-[36px] leading-[44px] font-normal">
                         Are you looking for work?
                       </p>
@@ -731,17 +731,14 @@ export default function HomePage() {
                         href="/login"
                         className="inline-flex items-center justify-center px-6 py-3 bg-white text-[#C55E7C] font-semibold rounded-lg hover:bg-gray-100 transition-colors w-fit"
                       >
-                        Apply now
+                        Join Fastlink
                       </Link>
                     </div>
                     <div className="space-y-4">
                       <div className="mb-4">
-                        <h2 className="text-[38px] leading-[46px] font-normal text-white">
+                        <h2 className="text-[28px] leading-[36px] font-normal text-white">
                           Recent Job Posts
                         </h2>
-                        <p className="text-[18px] leading-[24px] text-white/90">
-                          Hand-picked opportunities from businesses on FastLink
-                        </p>
                       </div>
                       <div className="space-y-4 rounded-xl bg-[#BE5271] p-3">
                         {featuredJobs.map((job) => (

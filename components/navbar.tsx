@@ -114,20 +114,20 @@ export function Navbar() {
               </Link>
             </div>
             <div className="py-1">
-              <Link href="/market-place" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
+              <Link href="/login" className="block px-4 py-3 text-[20px] leading-[28px] text-gray-800 hover:bg-gray-50">
+                Sign in
+              </Link>
+              <Link href="/market-place" className="block px-4 py-3 text-[20px] leading-[28px] text-gray-800 hover:bg-gray-50">
                 Market Place
               </Link>
-              <Link href="/quote" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
+              <Link href="/quote" className="block px-4 py-3 text-[20px] leading-[28px] text-gray-800 hover:bg-gray-50">
                 Get Quote
               </Link>
-              <Link href="/updates" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
-                Updates (Blog)
+              <Link href="/updates" className="block px-4 py-3 text-[20px] leading-[28px] text-gray-800 hover:bg-gray-50">
+                Updates
               </Link>
-              <Link href="/get-listed" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
+              <Link href="/get-listed" className="block px-4 py-3 text-[20px] leading-[28px] text-gray-800 hover:bg-gray-50">
                 Get Listed
-              </Link>
-              <Link href="/login" className="block px-4 py-3 text-[16px] leading-[22px] text-gray-800 hover:bg-gray-50">
-                Login
               </Link>
             </div>
           </div>
