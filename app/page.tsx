@@ -729,7 +729,7 @@ export default function HomePage() {
                       </p>
                       <Link
                         href="/login"
-                        className="inline-flex items-center justify-center px-6 py-3 bg-white text-[#C55E7C] font-semibold rounded-lg hover:bg-gray-100 transition-colors w-fit"
+                        className="inline-flex items-center justify-center px-6 py-3 bg-white text-[#C55E7C] font-semibold rounded-lg hover:bg-gray-100 transition-colors w-fit text-[25px]"
                       >
                         Join Fastlink
                       </Link>
