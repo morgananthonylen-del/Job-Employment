@@ -132,6 +132,8 @@ export async function POST(request: NextRequest) {
     
     const {
       image_url,
+      video_url,
+      media_type = "image",
       title,
       description,
       link_url,
@@ -140,17 +142,27 @@ export async function POST(request: NextRequest) {
       page_name = "home",
     } = body;
 
-    if (!image_url) {
+    // Validate that we have either image_url (for images) or video_url (for videos)
+    if (media_type === "image" && !image_url) {
       console.error("Missing image_url in request");
       return NextResponse.json(
-        { error: "Image URL is required" },
+        { error: "Image URL is required for image media type" },
+        { status: 400 }
+      );
+    }
+    if (media_type === "video" && !video_url) {
+      console.error("Missing video_url in request");
+      return NextResponse.json(
+        { error: "Video URL is required for video media type" },
         { status: 400 }
       );
     }
 
-    console.log(`Inserting slider image into database with page_name: ${page_name || "home"}...`);
-    const insertData = {
-      image_url,
+    console.log(`Inserting slider media into database with page_name: ${page_name || "home"}...`);
+    const insertData: any = {
+      image_url: media_type === "image" ? image_url : null,
+      video_url: media_type === "video" ? video_url : null,
+      media_type: media_type || "image",
       title: title || null,
       description: description || null,
       link_url: link_url || null,
@@ -168,25 +180,40 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Database insert error:", error);
-      // If page_name column doesn't exist, try without it
-      if (error.message?.includes("page_name") || error.code === "42703") {
-        console.warn("page_name column doesn't exist, inserting without it");
-        const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+      // If media_type or video_url columns don't exist, try fallback insert
+      if (
+        error.message?.includes("media_type") || 
+        error.message?.includes("video_url") ||
+        error.message?.includes("page_name") || 
+        error.code === "42703"
+      ) {
+        console.warn("Some columns don't exist, trying fallback insert without new columns");
+        const fallbackData: any = {
+          image_url: image_url || video_url, // Use whichever is available
+          title: title || null,
+          description: description || null,
+          link_url: link_url || null,
+          display_order,
+          is_active,
+        };
+        
+        // Only add page_name if it exists
+        if (!error.message?.includes("page_name")) {
+          fallbackData.page_name = page_name || "home";
+        }
+        
+        const { data: fallbackResult, error: fallbackError } = await supabaseAdmin
           .from("slider_images")
-          .insert({
-            image_url,
-            title: title || null,
-            description: description || null,
-            link_url: link_url || null,
-            display_order,
-            is_active,
-          })
+          .insert(fallbackData)
           .select()
           .single();
         
-        if (fallbackError) throw fallbackError;
-        console.log("Successfully created slider image (without page_name):", fallbackData);
-        return NextResponse.json(fallbackData, { status: 201 });
+        if (fallbackError) {
+          console.error("Fallback insert also failed:", fallbackError);
+          throw fallbackError;
+        }
+        console.log("Successfully created slider media (fallback):", fallbackResult);
+        return NextResponse.json(fallbackResult, { status: 201 });
       }
       throw error;
     }

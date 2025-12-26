@@ -36,6 +36,9 @@ interface Job {
 interface SliderImage {
   id: string;
   image_url: string;
+  video_url?: string;
+  media_type?: 'image' | 'video';
+  is_active?: boolean;
   title?: string;
   description?: string;
   link_url?: string;
@@ -174,14 +177,43 @@ export default function HomePage() {
       }
 
       const data = await response.json();
-      const images = Array.isArray(data) ? data : [];
-      setSliderImages(images);
+      const allMedia = Array.isArray(data) ? data : [];
+      
+      // Filter to only show one type: if there are videos, show ONLY videos (exclude all images)
+      // Only show images if NO videos exist
+      const activeVideos = allMedia.filter((item: SliderImage) => 
+        item.is_active !== false && 
+        item.media_type === 'video' && 
+        item.video_url
+      );
+      
+      const filteredMedia = activeVideos.length > 0
+        ? activeVideos // If videos exist, show ONLY videos
+        : allMedia.filter((item: SliderImage) => 
+            item.is_active !== false && 
+            (item.media_type === 'image' || (!item.media_type && item.image_url)) &&
+            !item.video_url // Exclude anything with a video_url
+          );
+      
+      console.log('Filtered media:', {
+        total: allMedia.length,
+        videos: activeVideos.length,
+        filtered: filteredMedia.length,
+        mediaTypes: filteredMedia.map(m => m.media_type)
+      });
+      
+      setSliderImages(filteredMedia);
 
-      if (images.length > 0) {
-        const firstImage = images[0];
-        if (firstImage?.image_url) {
+      if (filteredMedia.length > 0) {
+        const firstMedia = filteredMedia[0];
+        if (firstMedia?.media_type === 'video' && firstMedia?.video_url) {
+          // Preload video
+          const video = document.createElement('video');
+          video.src = firstMedia.video_url;
+          video.preload = 'auto';
+        } else if (firstMedia?.image_url) {
           const img = new Image();
-          img.src = firstImage.image_url;
+          img.src = firstMedia.image_url;
         }
       }
     } catch (error) {
@@ -437,14 +469,35 @@ export default function HomePage() {
     }
   }, [sliderImages.length]);
 
-  // Auto-play hero slider (fade)
+  // Auto-play hero slider (fade) - only for images, videos loop on their own
   useEffect(() => {
-    if (sliderImages.length <= 1) return;
+    const hasVideos = sliderImages.some(img => img.media_type === 'video' && img.video_url);
+    // Only auto-advance if we have multiple images (videos loop on their own)
+    if (sliderImages.length <= 1 || hasVideos) return;
     const id = setInterval(() => {
       setHeroIndex((prev) => (prev + 1) % sliderImages.length);
     }, 5000);
     return () => clearInterval(id);
-  }, [sliderImages.length]);
+  }, [sliderImages]);
+
+  // Ensure videos play when they become active
+  useEffect(() => {
+    if (sliderImages.length === 0) return;
+    const currentMedia = sliderImages[heroIndex];
+    if (currentMedia?.media_type === 'video' && currentMedia?.video_url) {
+      // Find and play the active video element
+      const videoElements = document.querySelectorAll('video');
+      videoElements.forEach((video, index) => {
+        if (index === heroIndex) {
+          video.play().catch(() => {
+            // Ignore autoplay errors
+          });
+        } else {
+          video.pause();
+        }
+      });
+    }
+  }, [heroIndex, sliderImages]);
 
   return (
     <>
@@ -452,22 +505,64 @@ export default function HomePage() {
       <section className="hero-transparent relative w-full h-screen min-h-[800px] overflow-hidden flex items-center" style={{ background: "transparent" }}>
         <div className="absolute inset-0">
           {sliderImages.length > 0 ? (
-            sliderImages.map((image, index) => (
-              <div
-                key={image.id}
-                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                  index === heroIndex ? "opacity-100 z-0" : "opacity-0"
-                }`}
-              >
-                <img
-                  src={image.image_url}
-                  alt={image.title || "Slider image"}
-                  className="w-full h-full object-cover"
-                />
-                {/* Overlay for text readability */}
-                <div className="absolute inset-0 hero-overlay" />
-              </div>
-            ))
+            sliderImages.map((media, index) => {
+              const isVideo = media.media_type === 'video' && media.video_url;
+              const isActive = index === heroIndex;
+              
+              return (
+                <div
+                  key={media.id}
+                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                    isActive ? "opacity-100 z-0" : "opacity-0"
+                  }`}
+                >
+                  {isVideo ? (
+                    <video
+                      key={media.id}
+                      src={media.video_url}
+                      className="w-full h-full object-cover"
+                      autoPlay={isActive}
+                      loop
+                      muted
+                      playsInline
+                      preload="auto"
+                      controls={false}
+                      disablePictureInPicture
+                      disableRemotePlayback
+                      onLoadedData={(e) => {
+                        // Ensure video plays when it becomes active
+                        const video = e.currentTarget;
+                        if (isActive) {
+                          video.currentTime = 0;
+                          video.play().catch(() => {
+                            // Ignore autoplay errors
+                          });
+                        } else {
+                          video.pause();
+                        }
+                      }}
+                      onEnded={(e) => {
+                        // Restart video when it ends (backup for loop attribute)
+                        const video = e.currentTarget;
+                        video.currentTime = 0;
+                        video.play().catch(() => {
+                          // Ignore autoplay errors
+                        });
+                      }}
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  ) : (
+                    <img
+                      src={media.image_url}
+                      alt={media.title || "Hero area media"}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                  {/* Overlay for text readability */}
+                  <div className="absolute inset-0 hero-overlay" />
+                </div>
+              );
+            })
           ) : (
             <div className="w-full h-full bg-white" />
           )}
@@ -493,7 +588,7 @@ export default function HomePage() {
               handleCombinedSearch();
             }}
           >
-            <div className="relative">
+            <div className="relative z-50">
               <div className="flex items-center bg-white rounded-full shadow-lg border border-gray-200 overflow-hidden">
                 <input
                   type="text"
@@ -515,7 +610,14 @@ export default function HomePage() {
                 </button>
               </div>
             {showHeroSuggestions && heroSuggestions.length > 0 && (
-              <div className="absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-2xl border border-gray-200 max-h-64 overflow-auto z-30">
+              <div 
+                className="absolute left-0 right-0 mt-2 rounded-lg shadow-2xl border border-gray-200 max-h-64 overflow-auto z-[60] search-dropdown-white" 
+                style={{ 
+                  backgroundColor: '#ffffff',
+                  background: '#ffffff',
+                  opacity: 1
+                }}
+              >
                 {heroSuggestions.map((business, index) => (
                   <button
                     key={business.id}
@@ -527,9 +629,12 @@ export default function HomePage() {
                       handleCombinedSearch();
                     }}
                     onMouseEnter={() => setHeroSelectedIndex(index)}
-                    className={`w-full text-left px-4 py-3 text-[16px] leading-[22px] text-gray-900 hover:bg-gray-50 ${
-                      heroSelectedIndex === index ? "bg-gray-50" : "bg-white"
-                    }`}
+                    className="w-full text-left px-4 py-3 text-[16px] leading-[22px] text-gray-900"
+                    style={{ 
+                      backgroundColor: heroSelectedIndex === index ? '#f9fafb' : '#ffffff',
+                      background: heroSelectedIndex === index ? '#f9fafb' : '#ffffff',
+                      opacity: '1'
+                    }}
                   >
                     <div className="text-[16px] text-gray-900 font-semibold truncate">
                       {business.company_name}
@@ -545,7 +650,7 @@ export default function HomePage() {
             )}
             </div>
           </form>
-          <div className="mt-4">
+          <div className="mt-4 relative z-10">
             <div className="flex items-center gap-3 flex-wrap">
               <button
                 type="button"

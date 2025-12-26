@@ -8,6 +8,8 @@ import Link from "next/link";
 interface SliderImage {
   id: string;
   image_url: string;
+  video_url?: string;
+  media_type?: 'image' | 'video';
   title?: string;
   description?: string;
   link_url?: string;
@@ -50,23 +52,50 @@ export function ImageSlider({ images, autoPlay = true, interval = 5000 }: ImageS
 
   const currentImage = images[currentIndex];
 
+  const isVideo = currentImage.media_type === 'video' && currentImage.video_url;
+  const mediaUrl = isVideo ? currentImage.video_url : currentImage.image_url;
+
   return (
     <div className="relative w-full h-[500px] overflow-hidden">
-      {/* Image */}
+      {/* Image or Video */}
       {currentImage.link_url ? (
         <Link href={currentImage.link_url} className="block w-full h-full">
-          <img
-            src={currentImage.image_url}
-            alt={currentImage.title || "Slider image"}
-            className="w-full h-full object-cover"
-          />
+          {isVideo ? (
+            <video
+              src={mediaUrl}
+              className="w-full h-full object-cover"
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
+          ) : (
+            <img
+              src={mediaUrl}
+              alt={currentImage.title || "Hero area media"}
+              className="w-full h-full object-cover"
+            />
+          )}
         </Link>
       ) : (
-        <img
-          src={currentImage.image_url}
-          alt={currentImage.title || "Slider image"}
-          className="w-full h-full object-cover"
-        />
+        <>
+          {isVideo ? (
+            <video
+              src={mediaUrl}
+              className="w-full h-full object-cover"
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
+          ) : (
+            <img
+              src={mediaUrl}
+              alt={currentImage.title || "Hero area media"}
+              className="w-full h-full object-cover"
+            />
+          )}
+        </>
       )}
 
       {/* No overlay text */}

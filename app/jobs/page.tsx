@@ -144,7 +144,7 @@ export default function JobsPage() {
               </div>
             </div>
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-30 overflow-hidden">
+              <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl z-30 overflow-hidden" style={{ backgroundColor: '#ffffff' }}>
                 {suggestions.map((suggestion) => (
                   <button
                     key={suggestion.id}
@@ -154,7 +154,8 @@ export default function JobsPage() {
                       setSearchQuery(suggestion.title || "");
                       setShowSuggestions(false);
                     }}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors"
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors bg-white"
+                    style={{ backgroundColor: '#ffffff' }}
                   >
                     <div className="text-[16px] text-gray-900 font-semibold truncate">
                       {suggestion.title || "Untitled job"}

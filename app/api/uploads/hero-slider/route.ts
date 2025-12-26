@@ -3,25 +3,11 @@ import { randomUUID } from "crypto";
 import { getAuthUser } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-const BUCKET = "Heroe Slider Images";
+const IMAGE_BUCKET = "Heroe Slider Images";
+const VIDEO_BUCKET = "video";
 
 export async function POST(request: NextRequest) {
   try {
-    // For now, allow access without auth check (matching other admin routes)
-    // TODO: Add proper admin authentication in production
-    // You can uncomment the code below to add auth checks:
-    /*
-    const authUser = getAuthUser(request);
-    const adminHeader = request.headers.get("x-admin-logged-in");
-    const adminCookie = request.cookies.get("admin_logged_in")?.value;
-    const isAdmin = authUser && (authUser.userType === "admin" || authUser.role === "admin");
-    const hasAdminFlag = adminHeader === "true" || adminCookie === "true";
-    
-    if (!isAdmin && !hasAdminFlag) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-    */
-
     if (!supabaseAdmin) {
       return NextResponse.json(
         { message: "Supabase storage is not configured" },
@@ -31,55 +17,92 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file");
+    const mediaType = (formData.get("mediaType") as string) || "image";
+
+    console.log("Upload request received:", {
+      fileName: file instanceof File ? file.name : "not a file",
+      fileType: file instanceof File ? file.type : "not a file",
+      mediaType: mediaType,
+    });
 
     if (!file || !(file instanceof File)) {
       return NextResponse.json({ message: "File is required" }, { status: 400 });
     }
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { message: "Invalid image file format. Please upload a JPG, PNG, WebP, or GIF image." },
-        { status: 400 }
-      );
+    // Validate file type based on media type
+    if (mediaType === "image") {
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+      if (!allowedTypes.includes(file.type)) {
+        return NextResponse.json(
+          { message: "Invalid image file format. Please upload a JPG, PNG, WebP, or GIF image." },
+          { status: 400 }
+        );
+      }
+    } else if (mediaType === "video") {
+      const allowedTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"];
+      if (!allowedTypes.includes(file.type)) {
+        return NextResponse.json(
+          { message: "Invalid video file format. Please upload an MP4, WebM, OGG, or QuickTime video." },
+          { status: 400 }
+        );
+      }
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    // Validate file size (max 10MB for images, 100MB for videos)
+    const maxSize = mediaType === "image" ? 10 * 1024 * 1024 : 100 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
-        { message: "Image file is too large. Maximum file size is 10MB." },
+        { 
+          message: mediaType === "image" 
+            ? "Image file is too large. Maximum file size is 10MB."
+            : "Video file is too large. Maximum file size is 100MB."
+        },
         { status: 400 }
       );
     }
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const extension = file.name.split(".").pop()?.toLowerCase() || "png";
+    const extension = file.name.split(".").pop()?.toLowerCase() || (mediaType === "image" ? "png" : "mp4");
     const filePath = `hero-slides/${Date.now()}-${randomUUID()}.${extension}`;
 
+    // Use appropriate bucket based on media type
+    const bucket = mediaType === "video" ? VIDEO_BUCKET : IMAGE_BUCKET;
+    
+    console.log("Uploading to bucket:", bucket, "with mediaType:", mediaType);
+
     const { error: uploadError } = await supabaseAdmin.storage
-      .from(BUCKET)
+      .from(bucket)
       .upload(filePath, buffer, {
         cacheControl: "3600",
         upsert: false,
-        contentType: file.type || "image/png",
+        contentType: file.type || (mediaType === "image" ? "image/png" : "video/mp4"),
       });
 
     if (uploadError) {
       console.error("Supabase upload error:", uploadError);
       return NextResponse.json(
-        { message: "Failed to upload hero slider image", error: uploadError.message },
+        { message: `Failed to upload hero ${mediaType}`, error: uploadError.message },
         { status: 500 }
       );
     }
 
     const {
       data: { publicUrl },
-    } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(filePath);
+    } = supabaseAdmin.storage.from(bucket).getPublicUrl(filePath);
+    
+    console.log("Upload successful:", {
+      bucket: bucket,
+      mediaType: mediaType,
+      url: publicUrl,
+    });
 
-    return NextResponse.json({ url: publicUrl, path: filePath });
+    // Return both url and videoUrl for consistency (videoUrl will be null for images)
+    return NextResponse.json({ 
+      url: mediaType === "image" ? publicUrl : null,
+      videoUrl: mediaType === "video" ? publicUrl : null,
+      path: filePath 
+    });
   } catch (error: any) {
     console.error("Hero slider upload error:", error);
     return NextResponse.json(

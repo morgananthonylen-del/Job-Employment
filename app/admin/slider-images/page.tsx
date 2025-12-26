@@ -22,6 +22,8 @@ import { Plus, Trash2, Loader2, Edit } from "lucide-react";
 interface SliderImage {
   id: string;
   image_url: string;
+  video_url?: string;
+  media_type: 'image' | 'video';
   title?: string;
   description?: string;
   link_url?: string;
@@ -46,6 +48,7 @@ export default function AdminSliderImagesPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [editingImageId, setEditingImageId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
   const [isCropDialogOpen, setIsCropDialogOpen] = useState(false);
   const [cropImage, setCropImage] = useState<string | null>(null);
   const [cropArea, setCropArea] = useState({ x: 0, y: 0, width: 0, height: 0 });
@@ -126,28 +129,41 @@ export default function AdminSliderImagesPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: "Invalid File Format",
-        description: "Please upload a JPG, PNG, WebP, or GIF image file.",
-        variant: "destructive",
-      });
-      // Reset file input
-      e.target.value = "";
-      return;
+    // Validate file type based on media type
+    if (mediaType === 'image') {
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Format",
+          description: "Please upload a JPG, PNG, WebP, or GIF image file.",
+          variant: "destructive",
+        });
+        e.target.value = "";
+        return;
+      }
+    } else if (mediaType === 'video') {
+      const allowedTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Format",
+          description: "Please upload an MP4, WebM, OGG, or QuickTime video file.",
+          variant: "destructive",
+        });
+        e.target.value = "";
+        return;
+      }
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    // Validate file size (max 10MB for images, 100MB for videos)
+    const maxSize = mediaType === 'image' ? 10 * 1024 * 1024 : 100 * 1024 * 1024; // 10MB for images, 100MB for videos
     if (file.size > maxSize) {
       toast({
         title: "File Too Large",
-        description: "Image file is too large. Maximum file size is 10MB.",
+        description: mediaType === 'image' 
+          ? "Image file is too large. Maximum file size is 10MB."
+          : "Video file is too large. Maximum file size is 100MB.",
         variant: "destructive",
       });
-      // Reset file input
       e.target.value = "";
       return;
     }
@@ -156,6 +172,14 @@ export default function AdminSliderImagesPage() {
       setIsUploading(true);
       const uploadFormData = new FormData();
       uploadFormData.append("file", file);
+      uploadFormData.append("mediaType", mediaType);
+      
+      console.log("Uploading file:", {
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        mediaType: mediaType,
+      });
 
       const uploadResponse = await fetch("/api/uploads/hero-slider", {
         method: "POST",
@@ -170,8 +194,8 @@ export default function AdminSliderImagesPage() {
         throw new Error(error.message || "Failed to upload image");
       }
 
-      const { url } = await uploadResponse.json();
-      console.log("Image uploaded successfully, URL:", url);
+      const { url, videoUrl } = await uploadResponse.json();
+      console.log("Media uploaded successfully, URL:", url, "Video URL:", videoUrl);
 
       // Immediately save to database with is_active: true
       try {
@@ -182,7 +206,9 @@ export default function AdminSliderImagesPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            image_url: url,
+            image_url: mediaType === 'image' ? url : null,
+            video_url: mediaType === 'video' ? (videoUrl || url) : null,
+            media_type: mediaType,
             title: null,
             description: null,
             link_url: null,
@@ -193,12 +219,20 @@ export default function AdminSliderImagesPage() {
         });
 
         if (!saveResponse.ok) {
-          const errorData = await saveResponse.json().catch(() => ({}));
-          console.error("Failed to save image to database:", errorData);
+          let errorMessage = "Unknown error";
+          try {
+            const errorData = await saveResponse.json();
+            errorMessage = errorData?.error || errorData?.message || `HTTP ${saveResponse.status}`;
+            console.error("Failed to save media to database:", errorData);
+          } catch (parseError) {
+            const errorText = await saveResponse.text().catch(() => "");
+            errorMessage = errorText || `HTTP ${saveResponse.status}`;
+            console.error("Failed to parse error response:", errorMessage);
+          }
           // Still show success for upload, but warn about database
           toast({
-            title: "Image Uploaded",
-            description: "Image uploaded but failed to save to database. Syncing from bucket...",
+            title: `${mediaType === 'image' ? 'Image' : 'Video'} Uploaded`,
+            description: `${mediaType === 'image' ? 'Image' : 'Video'} uploaded but failed to save to database: ${errorMessage}. Syncing from bucket...`,
             variant: "default",
           });
           // Try sync as fallback
@@ -207,7 +241,7 @@ export default function AdminSliderImagesPage() {
           console.log("Image saved to database successfully");
           toast({
             title: "Success",
-            description: "Image uploaded and saved successfully.",
+            description: `${mediaType === 'image' ? 'Image' : 'Video'} uploaded and saved successfully.`,
           });
           // Refresh the list
           await fetchSliderImages();
@@ -305,37 +339,125 @@ export default function AdminSliderImagesPage() {
     const file = e.target.files?.[0];
     if (!file || !editingImageId) return;
 
+    // Find the current media type from the editing image
+    const editingImage = sliderImages.find(img => img.id === editingImageId);
+    const currentMediaType = editingImage?.media_type || 'image';
+
     // Re-use the same validation rules as upload
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: "Invalid File Format",
-        description: "Please upload a JPG, PNG, WebP, or GIF image file.",
-        variant: "destructive",
-      });
-      e.target.value = "";
-      return;
+    if (currentMediaType === 'image') {
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Format",
+          description: "Please upload a JPG, PNG, WebP, or GIF image file.",
+          variant: "destructive",
+        });
+        e.target.value = "";
+        return;
+      }
+    } else if (currentMediaType === 'video') {
+      const allowedTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime"];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Format",
+          description: "Please upload an MP4, WebM, OGG, or QuickTime video file.",
+          variant: "destructive",
+        });
+        e.target.value = "";
+        return;
+      }
     }
 
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = currentMediaType === 'image' ? 10 * 1024 * 1024 : 100 * 1024 * 1024;
     if (file.size > maxSize) {
       toast({
         title: "File Too Large",
-        description: "Image file is too large. Maximum file size is 10MB.",
+        description: currentMediaType === 'image'
+          ? "Image file is too large. Maximum file size is 10MB."
+          : "Video file is too large. Maximum file size is 100MB.",
         variant: "destructive",
       });
       e.target.value = "";
       return;
     }
 
-    // Open crop dialog with the selected image
-    setImageToCrop(file);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setCropImage(event.target?.result as string);
-      setIsCropDialogOpen(true);
-    };
-    reader.readAsDataURL(file);
+    // For images, open crop dialog. For videos, upload directly
+    if (currentMediaType === 'image') {
+      setImageToCrop(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCropImage(event.target?.result as string);
+        setIsCropDialogOpen(true);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // For videos, upload directly without cropping
+      handleVideoUpload(file);
+    }
+  };
+
+  const handleVideoUpload = async (file: File) => {
+    if (!editingImageId) return;
+
+    try {
+      setIsUploading(true);
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+      uploadFormData.append("mediaType", "video");
+
+      const uploadResponse = await fetch("/api/uploads/hero-slider", {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: uploadFormData,
+      });
+
+      if (!uploadResponse.ok) {
+        const error = await uploadResponse
+          .json()
+          .catch(() => ({ message: "Failed to upload video" }));
+        throw new Error(error.message || "Failed to upload video");
+      }
+
+      const { videoUrl } = await uploadResponse.json();
+
+      // Update existing slider image with new video URL
+      const saveResponse = await fetch(`/api/admin/slider-images/${editingImageId}`, {
+        method: "PUT",
+        headers: {
+          ...getAuthHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          video_url: videoUrl,
+          media_type: "video",
+        }),
+      });
+
+      if (!saveResponse.ok) {
+        const errorData = await saveResponse.json().catch(() => ({}));
+        console.error("Failed to update video in database:", errorData);
+        throw new Error("Failed to update video");
+      }
+
+      toast({
+        title: "Success",
+        description: "Video updated successfully.",
+      });
+
+      setEditingImageId(null);
+      await fetchSliderImages();
+    } catch (error: any) {
+      toast({
+        title: "Edit Error",
+        description: error.message || "Failed to update video. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      if (editFileInputRef.current) {
+        editFileInputRef.current.value = "";
+      }
+    }
   };
 
   const handleCrop = () => {
@@ -381,6 +503,7 @@ export default function AdminSliderImagesPage() {
         setIsUploading(true);
         const uploadFormData = new FormData();
         uploadFormData.append("file", blob, imageToCrop.name);
+        uploadFormData.append("mediaType", "image"); // Crop is only for images
 
         const uploadResponse = await fetch("/api/uploads/hero-slider", {
           method: "POST",
@@ -406,6 +529,7 @@ export default function AdminSliderImagesPage() {
           },
           body: JSON.stringify({
             image_url: url,
+            media_type: "image",
           }),
         });
 
@@ -568,7 +692,31 @@ export default function AdminSliderImagesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setMediaType('image')}
+            className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+              mediaType === 'image'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Images
+          </button>
+          <button
+            type="button"
+            onClick={() => setMediaType('video')}
+            className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+              mediaType === 'video'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Videos
+          </button>
+        </div>
         <Button
           onClick={() => {
             fileInputRef.current?.click();
@@ -585,35 +733,37 @@ export default function AdminSliderImagesPage() {
           ) : (
             <>
               <Plus className="h-5 w-5 mr-2" />
-              Upload Hero Slide
+              Upload {mediaType === 'image' ? 'Image' : 'Video'}
             </>
           )}
         </Button>
+      </div>
 
-        {/* Hidden file input for uploading images */}
+        {/* Hidden file input for uploading images/videos */}
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+          accept={mediaType === 'image' 
+            ? "image/jpeg,image/jpg,image/png,image/webp,image/gif"
+            : "video/mp4,video/webm,video/ogg,video/quicktime"}
           className="hidden"
           onChange={handleFileSelect}
         />
 
-        {/* Hidden file input for editing/replacing existing images */}
+        {/* Hidden file input for editing/replacing existing images/videos */}
         <input
           ref={editFileInputRef}
           type="file"
-          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,video/mp4,video/webm,video/ogg,video/quicktime"
           className="hidden"
           onChange={handleEditFileSelect}
         />
-      </div>
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Hero Slides</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Hero Area</h1>
           <p className="text-gray-600 mt-2">
-            Add and manage slider images for different pages
+            Add and manage images or videos for the hero area on different pages
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -637,16 +787,16 @@ export default function AdminSliderImagesPage() {
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add Slide
+            Add {mediaType === 'image' ? 'Image' : 'Video'}
           </Button>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Slider Images</CardTitle>
+          <CardTitle>All Hero Area Media - {mediaType === 'image' ? 'Images' : 'Videos'}</CardTitle>
           <CardDescription>
-            Manage images displayed in the home page hero slider
+            Manage {mediaType === 'image' ? 'images' : 'videos'} displayed in the hero area. Switch tabs above to view the other type.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -655,7 +805,7 @@ export default function AdminSliderImagesPage() {
           )}
           {!loading && sliderImages.length === 0 && (
             <p className="text-center text-gray-500 py-8">
-              No hero slides found
+              No {mediaType === 'image' ? 'images' : 'videos'} found. Upload one using the button above.
             </p>
           )}
           {!loading && sliderImages.length > 0 && (
@@ -669,7 +819,16 @@ export default function AdminSliderImagesPage() {
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {sliderImages.map((image) => (
+                {sliderImages
+                  .filter((image) => {
+                    // Filter to show only the selected media type
+                    if (mediaType === 'video') {
+                      return image.media_type === 'video' && image.video_url;
+                    } else {
+                      return !image.media_type || image.media_type === 'image' || image.image_url;
+                    }
+                  })
+                  .map((image) => (
                   <div
                     key={image.id}
                     className="relative bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-move"
@@ -679,11 +838,20 @@ export default function AdminSliderImagesPage() {
                     onDrop={(e) => handleDrop(e, image.id)}
                   >
                     <div className="aspect-video bg-gray-100">
-                      <img
-                        src={image.image_url}
-                        alt={image.title || "Hero slide"}
-                        className="w-full h-full object-cover"
-                      />
+                      {image.media_type === 'video' && image.video_url ? (
+                        <video
+                          src={image.video_url}
+                          className="w-full h-full object-cover"
+                          controls={false}
+                          muted
+                        />
+                      ) : (
+                        <img
+                          src={image.image_url}
+                          alt={image.title || "Hero area media"}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
                     </div>
                     <div className="flex items-center justify-between px-3 py-2 border-t bg-white">
                       <Button
@@ -834,11 +1002,11 @@ export default function AdminSliderImagesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Hidden file input for editing images */}
+      {/* Hidden file input for editing images/videos */}
       <input
         ref={editFileInputRef}
         type="file"
-        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,video/mp4,video/webm,video/ogg,video/quicktime"
         className="hidden"
         onChange={handleEditFileSelect}
       />

@@ -24,6 +24,15 @@ html {
   background: transparent !important;
 }
 
+/* Force search dropdown to have white background - override hero transparent */
+.search-dropdown-white,
+.hero-transparent .search-dropdown-white,
+.hero-transparent .hero-content-clear .search-dropdown-white {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  opacity: 1 !important;
+}
+
 /* Force hero overlay to show despite global inherit rule */
 .hero-overlay {
   background-color: rgba(0, 0, 0, 0.5) !important;
